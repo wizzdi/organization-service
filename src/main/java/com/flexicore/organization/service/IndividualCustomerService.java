@@ -69,7 +69,7 @@ public class IndividualCustomerService implements ServicePlugin {
 		return individualCustomer;
 	}
 
-	private boolean updateIndividualCustomerNoMerge(IndividualCustomer individualCustomer,
+	public boolean updateIndividualCustomerNoMerge(IndividualCustomer individualCustomer,
 			IndividualCustomerCreate creationContainer) {
 		boolean update = customerService.updateCustomerNoMerge(individualCustomer,
 				creationContainer);

@@ -32,6 +32,7 @@ public class OrganizationalCustomerService implements ServicePlugin {
 	@Autowired
 	private CustomerService customerService;
 
+
 	public <T extends Baseclass> T getByIdOrNull(String id, Class<T> c,
 			List<String> batch, SecurityContext securityContext) {
 		return repository.getByIdOrNull(id, c, batch, securityContext);
@@ -50,9 +51,13 @@ public class OrganizationalCustomerService implements ServicePlugin {
 
 	public PaginationResponse<OrganizationalCustomer> getAllOrganizationalCustomers(
 			SecurityContext securityContext, OrganizationalCustomerFiltering filtering) {
-		List<OrganizationalCustomer> list = repository.getAllOrganizationalCustomers(securityContext, filtering);
+		List<OrganizationalCustomer> list = listAllOrganizationalCustomers(securityContext, filtering);
 		long count = repository.countAllOrganizationalCustomers(securityContext, filtering);
 		return new PaginationResponse<>(list, filtering, count);
+	}
+
+	public List<OrganizationalCustomer> listAllOrganizationalCustomers(SecurityContext securityContext, OrganizationalCustomerFiltering filtering) {
+		return repository.getAllOrganizationalCustomers(securityContext, filtering);
 	}
 
 	public OrganizationalCustomer createOrganizationalCustomer(OrganizationalCustomerCreate creationContainer,
@@ -69,7 +74,7 @@ public class OrganizationalCustomerService implements ServicePlugin {
 		return organizationalCustomer;
 	}
 
-	private boolean updateOrganizationalCustomerNoMerge(OrganizationalCustomer organizationalCustomer,
+	public boolean updateOrganizationalCustomerNoMerge(OrganizationalCustomer organizationalCustomer,
 			OrganizationalCustomerCreate creationContainer) {
 		boolean update = customerService.updateCustomerNoMerge(organizationalCustomer,
 				creationContainer);

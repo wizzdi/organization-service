@@ -45,8 +45,8 @@ public class IndividualCustomerRepository extends AbstractRepositoryPlugin {
 		return countAllFiltered(queryInformationHolder, preds, cb, q, r);
 	}
 
-	private void addIndividualCustomerPredicates(IndividualCustomerFiltering filtering,
-			CriteriaBuilder cb, Root<IndividualCustomer> r, List<Predicate> preds) {
+	public static <T extends IndividualCustomer>  void addIndividualCustomerPredicates(IndividualCustomerFiltering filtering,
+			CriteriaBuilder cb, Root<T> r, List<Predicate> preds) {
 		CustomerRepository.addCustomerPredicates(filtering,cb,r,preds);
 
 	}

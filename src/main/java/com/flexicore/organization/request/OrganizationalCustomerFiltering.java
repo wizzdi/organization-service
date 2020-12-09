@@ -1,6 +1,7 @@
 package com.flexicore.organization.request;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.flexicore.model.User;
 import com.flexicore.organization.model.Organization;
 
 import java.util.HashSet;
@@ -12,7 +13,6 @@ public class OrganizationalCustomerFiltering extends CustomerFiltering {
     private Set<String> organizationIds=new HashSet<>();
     @JsonIgnore
     private List<Organization> organizations;
-
 
 
     public Set<String> getOrganizationIds() {
@@ -33,4 +33,5 @@ public class OrganizationalCustomerFiltering extends CustomerFiltering {
         this.organizations = organizations;
         return (T) this;
     }
+
 }

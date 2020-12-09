@@ -3,18 +3,21 @@ package com.flexicore.organization.data;
 import com.flexicore.annotations.plugins.PluginInfo;
 import com.flexicore.interfaces.AbstractRepositoryPlugin;
 import com.flexicore.model.QueryInformationHolder;
+import com.flexicore.model.Tenant;
+import com.flexicore.organization.model.Organization;
+import com.flexicore.organization.model.Organization_;
 import com.flexicore.organization.model.OrganizationalCustomer;
+import com.flexicore.organization.model.OrganizationalCustomer_;
 import com.flexicore.organization.request.OrganizationalCustomerFiltering;
 import com.flexicore.security.SecurityContext;
 import org.pf4j.Extension;
 import org.springframework.stereotype.Component;
 
-import javax.persistence.criteria.CriteriaBuilder;
-import javax.persistence.criteria.CriteriaQuery;
-import javax.persistence.criteria.Predicate;
-import javax.persistence.criteria.Root;
+import javax.persistence.criteria.*;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 @PluginInfo(version = 1)
 @Extension
@@ -45,9 +48,15 @@ public class OrganizationalCustomerRepository extends AbstractRepositoryPlugin {
 		return countAllFiltered(queryInformationHolder, preds, cb, q, r);
 	}
 
-	private void addOrganizationalCustomerPredicates(OrganizationalCustomerFiltering filtering,
-			CriteriaBuilder cb, Root<OrganizationalCustomer> r, List<Predicate> preds) {
+	public static <T extends OrganizationalCustomer> void addOrganizationalCustomerPredicates(OrganizationalCustomerFiltering filtering,
+			CriteriaBuilder cb, Root<T> r, List<Predicate> preds) {
 		CustomerRepository.addCustomerPredicates(filtering,cb,r,preds);
+		if(filtering.getOrganizations()!=null &&!filtering.getOrganizations().isEmpty()){
+			Set<String> ids=filtering.getOrganizations().stream().map(f->f.getId()).collect(Collectors.toSet());
+			Join<T, Organization> join= r.join(OrganizationalCustomer_.organization);
+			preds.add(join.get(Organization_.id).in(ids));
+		}
+
 
 	}
 

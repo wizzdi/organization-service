@@ -2,23 +2,28 @@ package com.flexicore.organization.service;
 
 import com.flexicore.annotations.plugins.PluginInfo;
 import com.flexicore.data.jsoncontainers.PaginationResponse;
+import com.flexicore.events.LoginEvent;
 import com.flexicore.interfaces.ServicePlugin;
 import com.flexicore.model.Baseclass;
 import com.flexicore.organization.data.CustomerRepository;
 import com.flexicore.organization.model.Customer;
-import com.flexicore.organization.model.Organization;
 import com.flexicore.organization.request.CustomerCreate;
 import com.flexicore.organization.request.CustomerFiltering;
 import com.flexicore.organization.request.CustomerUpdate;
 import com.flexicore.security.SecurityContext;
 import com.flexicore.service.BaseclassNewService;
 import org.pf4j.Extension;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Primary;
+import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Component;
 
-import javax.ws.rs.BadRequestException;
-import java.util.*;
+import java.time.OffsetDateTime;
+import java.util.Collections;
+import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 @PluginInfo(version = 1)
@@ -27,12 +32,27 @@ import java.util.stream.Collectors;
 @Primary
 public class CustomerService implements ServicePlugin {
 
+	private static final Logger logger= LoggerFactory.getLogger(CustomerService.class);
+
 	@PluginInfo(version = 1)
 	@Autowired
 	private CustomerRepository repository;
 
 	@Autowired
 	private BaseclassNewService baseclassNewService;
+
+	@EventListener
+	public void onUserLoggedIn(LoginEvent loginEvent){
+		List<Customer> customers = listAllCustomers(null, new CustomerFiltering().setUsers(Collections.singletonList(loginEvent.getUser())));
+		for (Customer customer : customers) {
+			customer.setLastLogin(OffsetDateTime.now());
+		}
+		repository.massMerge(customers);
+		if(logger.isDebugEnabled()&&!customers.isEmpty()){
+			logger.debug("updated last used for customers: "+customers.stream().map(f->f.getName()+"("+f.getId()+")").collect(Collectors.joining(",")));
+		}
+	}
+
 
 	public <T extends Baseclass> T getByIdOrNull(String id, Class<T> c,
 			List<String> batch, SecurityContext securityContext) {
