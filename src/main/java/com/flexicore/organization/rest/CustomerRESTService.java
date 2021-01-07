@@ -25,7 +25,7 @@ import javax.ws.rs.core.Context;
 @PluginInfo(version = 1)
 @OperationsInside
 @ProtectedREST
-@Path("plugins/Customer")
+@Path("plugins/organization/Customer")
 @RequestScoped
 @Tag(name = "Customer")
 @Extension
