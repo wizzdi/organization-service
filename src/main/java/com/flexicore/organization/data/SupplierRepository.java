@@ -1,58 +1,104 @@
 package com.flexicore.organization.data;
 
-import com.flexicore.annotations.plugins.PluginInfo;
-import com.flexicore.interfaces.AbstractRepositoryPlugin;
-import com.flexicore.model.Baselink_;
-import com.flexicore.model.QueryInformationHolder;
+import com.flexicore.model.Baseclass;
+import com.flexicore.model.Basic;
 import com.flexicore.organization.model.Supplier;
-import com.flexicore.organization.model.Supplier_;
 import com.flexicore.organization.request.SupplierFiltering;
-import com.flexicore.security.SecurityContext;
+import com.flexicore.security.SecurityContextBase;
+import com.wizzdi.flexicore.boot.base.interfaces.Plugin;
+import com.wizzdi.flexicore.security.data.BasicRepository;
+import org.pf4j.Extension;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Transactional;
 
+import javax.persistence.EntityManager;
+import javax.persistence.PersistenceContext;
+import javax.persistence.TypedQuery;
 import javax.persistence.criteria.*;
+import javax.persistence.metamodel.SingularAttribute;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
-import java.util.stream.Collectors;
-import org.pf4j.Extension;
-import org.springframework.stereotype.Component;
 
-@PluginInfo(version = 1)
+
 @Extension
 @Component
-public class SupplierRepository extends AbstractRepositoryPlugin {
+public class SupplierRepository implements Plugin {
+	@PersistenceContext
+	private EntityManager em;
+	@Autowired
+	private OrganizationRepository organizationRepository;
 
-	public List<Supplier> getAllSuppliers(SecurityContext securityContext,
-			SupplierFiltering filtering) {
+	public List<Supplier> getAllSuppliers(SecurityContextBase securityContextBase,
+										  SupplierFiltering filtering) {
 		CriteriaBuilder cb = em.getCriteriaBuilder();
 		CriteriaQuery<Supplier> q = cb.createQuery(Supplier.class);
 		Root<Supplier> r = q.from(Supplier.class);
 		List<Predicate> preds = new ArrayList<>();
-		addSupplierPredicate(filtering, cb, r, preds);
-		QueryInformationHolder<Supplier> queryInformationHolder = new QueryInformationHolder<>(
-				filtering, Supplier.class, securityContext);
-		return getAllFiltered(queryInformationHolder, preds, cb, q, r);
+		addSupplierPredicate(filtering, cb,q, r, preds,securityContextBase);
+		q.select(r).where(preds.toArray(Predicate[]::new));
+		TypedQuery<Supplier> query = em.createQuery(q);
+		BasicRepository.addPagination(filtering, query);
+		return query.getResultList();
 	}
 
 
-	public Long countAllSuppliers(SecurityContext securityContext,
-			SupplierFiltering filtering) {
+	public Long countAllSuppliers(SecurityContextBase securityContextBase,
+								  SupplierFiltering filtering) {
 		CriteriaBuilder cb = em.getCriteriaBuilder();
 		CriteriaQuery<Long> q = cb.createQuery(Long.class);
 		Root<Supplier> r = q.from(Supplier.class);
 		List<Predicate> preds = new ArrayList<>();
-		addSupplierPredicate(filtering, cb, r, preds);
-		QueryInformationHolder<Supplier> queryInformationHolder = new QueryInformationHolder<>(
-				filtering, Supplier.class, securityContext);
-		return countAllFiltered(queryInformationHolder, preds, cb, q, r);
+		addSupplierPredicate(filtering, cb,q, r, preds,securityContextBase);
+		q.select(cb.count(r)).where(preds.toArray(Predicate[]::new));
+		TypedQuery<Long> query = em.createQuery(q);
+		return query.getSingleResult();
 	}
 
-	private void addSupplierPredicate(SupplierFiltering filtering,
-			CriteriaBuilder cb, Root<Supplier> r, List<Predicate> preds) {
+	public <T extends Supplier> void addSupplierPredicate(SupplierFiltering filtering, CriteriaBuilder cb, CommonAbstractCriteria q,From<?,T> r, List<Predicate> preds,SecurityContextBase securityContextBase) {
 
-
+		organizationRepository.addOrganizationPredicates(filtering,cb,q,r,preds,securityContextBase);
 	}
 
 
+
+	public <T extends Baseclass> List<T> listByIds(Class<T> c, Set<String> ids, SecurityContextBase securityContext) {
+		return organizationRepository.listByIds(c, ids, securityContext);
+	}
+
+	public <T extends Baseclass> T getByIdOrNull(String id, Class<T> c, SecurityContextBase securityContext) {
+		return organizationRepository.getByIdOrNull(id, c, securityContext);
+	}
+
+	public <D extends Basic, E extends Baseclass, T extends D> T getByIdOrNull(String id, Class<T> c, SingularAttribute<D, E> baseclassAttribute, SecurityContextBase securityContext) {
+		return organizationRepository.getByIdOrNull(id, c, baseclassAttribute, securityContext);
+	}
+
+	public <D extends Basic, E extends Baseclass, T extends D> List<T> listByIds(Class<T> c, Set<String> ids, SingularAttribute<D, E> baseclassAttribute, SecurityContextBase securityContext) {
+		return organizationRepository.listByIds(c, ids, baseclassAttribute, securityContext);
+	}
+
+	public <D extends Basic, T extends D> List<T> findByIds(Class<T> c, Set<String> ids, SingularAttribute<D, String> idAttribute) {
+		return organizationRepository.findByIds(c, ids, idAttribute);
+	}
+
+	public <T extends Basic> List<T> findByIds(Class<T> c, Set<String> requested) {
+		return organizationRepository.findByIds(c, requested);
+	}
+
+	public <T> T findByIdOrNull(Class<T> type, String id) {
+		return organizationRepository.findByIdOrNull(type, id);
+	}
+
+	@Transactional
+	public void merge(Object base) {
+		organizationRepository.merge(base);
+	}
+
+	@Transactional
+	public void massMerge(List<?> toMerge) {
+		organizationRepository.massMerge(toMerge);
+	}
 
 }

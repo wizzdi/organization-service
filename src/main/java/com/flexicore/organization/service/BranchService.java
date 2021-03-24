@@ -1,8 +1,10 @@
 package com.flexicore.organization.service;
 
-import com.flexicore.annotations.plugins.PluginInfo;
-import com.flexicore.data.jsoncontainers.PaginationResponse;
-import com.flexicore.interfaces.ServicePlugin;
+
+import com.flexicore.model.Basic;
+import com.flexicore.model.SecuredBasic_;
+import com.wizzdi.flexicore.boot.base.interfaces.Plugin;
+import com.wizzdi.flexicore.security.response.PaginationResponse;
 import com.flexicore.model.Baseclass;
 import com.flexicore.organization.data.BranchRepository;
 import com.flexicore.organization.model.Branch;
@@ -10,70 +12,70 @@ import com.flexicore.organization.model.Organization;
 import com.flexicore.organization.request.BranchCreate;
 import com.flexicore.organization.request.BranchFiltering;
 import com.flexicore.organization.request.BranchUpdate;
-import com.flexicore.security.SecurityContext;
+import com.flexicore.security.SecurityContextBase;
 
-import javax.ws.rs.BadRequestException;
+
 import java.util.*;
 import java.util.stream.Collectors;
+
+import com.wizzdi.flexicore.security.service.BaseclassService;
 import org.pf4j.Extension;
 import org.springframework.context.annotation.Primary;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Component;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.server.ResponseStatusException;
 
-@PluginInfo(version = 1)
+import javax.persistence.metamodel.SingularAttribute;
+
+
 @Extension
 @Component
-@Primary
-public class BranchService implements ServicePlugin {
 
-	@PluginInfo(version = 1)
+public class BranchService implements Plugin {
+
+
 	@Autowired
 	private BranchRepository repository;
 
-	@PluginInfo(version = 1)
+
 	@Autowired
 	private SiteService siteService;
 
-	public <T extends Baseclass> T getByIdOrNull(String id, Class<T> c,
-			List<String> batch, SecurityContext securityContext) {
-		return repository.getByIdOrNull(id, c, batch, securityContext);
-	}
 
-	public <T extends Baseclass> List<T> listByIds(Class<T> c, Set<String> ids,
-			SecurityContext securityContext) {
-		return repository.listByIds(c, ids, securityContext);
-	}
 
 	public void validateFiltering(BranchFiltering filtering,
-			SecurityContext securityContext) {
-		siteService.validateFiltering(filtering, securityContext);
+			SecurityContextBase securityContextBase) {
+		siteService.validateFiltering(filtering, securityContextBase);
 		Set<String> organizationIds = filtering.getOrganizationIds();
-		Map<String, Organization> organizations = organizationIds.isEmpty() ? new HashMap<>() : listByIds(Organization.class, organizationIds, securityContext).parallelStream().collect(Collectors.toMap(f -> f.getId(), f -> f));
+		Map<String, Organization> organizations = organizationIds.isEmpty() ? new HashMap<>() : listByIds(Organization.class, organizationIds, SecuredBasic_.security, securityContextBase).parallelStream().collect(Collectors.toMap(f -> f.getId(), f -> f));
 		organizationIds.removeAll(organizations.keySet());
 		if (!organizationIds.isEmpty()) {
-			throw new BadRequestException("No Organization with ids " + organizationIds);
+			throw new ResponseStatusException(HttpStatus.BAD_REQUEST,"No Organization with ids " + organizationIds);
 		}
 		filtering.setOrganizations(new ArrayList<>(organizations.values()));
 	}
 
 	public PaginationResponse<Branch> getAllBranches(
-			SecurityContext securityContext, BranchFiltering filtering) {
-		List<Branch> list = repository.getAllBranches(securityContext,
+			SecurityContextBase securityContextBase, BranchFiltering filtering) {
+		List<Branch> list = repository.getAllBranches(securityContextBase,
 				filtering);
-		long count = repository.countAllBranches(securityContext, filtering);
+		long count = repository.countAllBranches(securityContextBase, filtering);
 		return new PaginationResponse<>(list, filtering, count);
 	}
 
 	public Branch createBranch(BranchCreate creationContainer,
-			SecurityContext securityContext) {
-		Branch branch = createBranchNoMerge(creationContainer, securityContext);
+			SecurityContextBase securityContextBase) {
+		Branch branch = createBranchNoMerge(creationContainer, securityContextBase);
 		repository.merge(branch);
 		return branch;
 	}
 
 	private Branch createBranchNoMerge(BranchCreate creationContainer,
-			SecurityContext securityContext) {
-		Branch branch = new Branch(creationContainer.getName(),securityContext);
+			SecurityContextBase securityContextBase) {
+		Branch branch = new Branch();
+		Baseclass securityObjectNoMerge = BaseclassService.createSecurityObjectNoMerge(branch, securityContextBase);
 		updateBranchNoMerge(branch, creationContainer);
 		return branch;
 	}
@@ -91,7 +93,7 @@ public class BranchService implements ServicePlugin {
 	}
 
 	public Branch updateBranch(BranchUpdate updateContainer,
-			SecurityContext securityContext) {
+			SecurityContextBase securityContextBase) {
 		Branch branch = updateContainer.getBranch();
 		if (updateBranchNoMerge(branch, updateContainer)) {
 			repository.merge(branch);
@@ -100,13 +102,56 @@ public class BranchService implements ServicePlugin {
 	}
 
 	public void validate(BranchCreate creationContainer,
-			SecurityContext securityContext) {
-		siteService.validate(creationContainer, securityContext);
+			SecurityContextBase securityContextBase) {
+		siteService.validate(creationContainer, securityContextBase);
 		String organizationId = creationContainer.getOrganizationId();
-		Organization organization = organizationId == null ? null : getByIdOrNull(organizationId, Organization.class, null, securityContext);
+		Organization organization = organizationId == null ? null : getByIdOrNull(organizationId, Organization.class, null, securityContextBase);
 		if (organization == null && organizationId != null) {
-			throw new BadRequestException("No Organization with id " + organizationId);
+			throw new ResponseStatusException(HttpStatus.BAD_REQUEST,"No Organization with id " + organizationId);
 		}
 		creationContainer.setOrganization(organization);
+	}
+
+
+	public long countAllBranches(SecurityContextBase securityContextBase, BranchFiltering filtering) {
+		return repository.countAllBranches(securityContextBase, filtering);
+	}
+
+	public <T extends Baseclass> List<T> listByIds(Class<T> c, Set<String> ids, SecurityContextBase securityContext) {
+		return repository.listByIds(c, ids, securityContext);
+	}
+
+	public <T extends Baseclass> T getByIdOrNull(String id, Class<T> c, SecurityContextBase securityContext) {
+		return repository.getByIdOrNull(id, c, securityContext);
+	}
+
+	public <D extends Basic, E extends Baseclass, T extends D> T getByIdOrNull(String id, Class<T> c, SingularAttribute<D, E> baseclassAttribute, SecurityContextBase securityContext) {
+		return repository.getByIdOrNull(id, c, baseclassAttribute, securityContext);
+	}
+
+	public <D extends Basic, E extends Baseclass, T extends D> List<T> listByIds(Class<T> c, Set<String> ids, SingularAttribute<D, E> baseclassAttribute, SecurityContextBase securityContext) {
+		return repository.listByIds(c, ids, baseclassAttribute, securityContext);
+	}
+
+	public <D extends Basic, T extends D> List<T> findByIds(Class<T> c, Set<String> ids, SingularAttribute<D, String> idAttribute) {
+		return repository.findByIds(c, ids, idAttribute);
+	}
+
+	public <T extends Basic> List<T> findByIds(Class<T> c, Set<String> requested) {
+		return repository.findByIds(c, requested);
+	}
+
+	public <T> T findByIdOrNull(Class<T> type, String id) {
+		return repository.findByIdOrNull(type, id);
+	}
+
+	@Transactional
+	public void merge(Object base) {
+		repository.merge(base);
+	}
+
+	@Transactional
+	public void massMerge(List<?> toMerge) {
+		repository.massMerge(toMerge);
 	}
 }

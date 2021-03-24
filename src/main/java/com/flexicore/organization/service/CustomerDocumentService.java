@@ -1,85 +1,119 @@
 package com.flexicore.organization.service;
 
-import com.flexicore.annotations.plugins.PluginInfo;
-import com.flexicore.data.jsoncontainers.PaginationResponse;
-import com.flexicore.interfaces.ServicePlugin;
+
 import com.flexicore.model.Baseclass;
-import com.flexicore.model.FileResource;
+import com.flexicore.model.Basic;
+import com.flexicore.model.SecuredBasic_;
 import com.flexicore.organization.data.CustomerDocumentRepository;
 import com.flexicore.organization.model.Customer;
 import com.flexicore.organization.model.CustomerDocument;
-import com.flexicore.organization.model.Organization;
 import com.flexicore.organization.request.CustomerDocumentCreate;
 import com.flexicore.organization.request.CustomerDocumentFiltering;
 import com.flexicore.organization.request.CustomerDocumentUpdate;
-import com.flexicore.security.SecurityContext;
-import com.flexicore.service.BaseclassNewService;
+import com.flexicore.security.SecurityContextBase;
+import com.wizzdi.flexicore.boot.base.interfaces.Plugin;
+import com.wizzdi.flexicore.file.model.FileResource;
+import com.wizzdi.flexicore.security.response.PaginationResponse;
+import com.wizzdi.flexicore.security.service.BaseclassService;
+import com.wizzdi.flexicore.security.service.BasicService;
 import org.pf4j.Extension;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.annotation.Primary;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.server.ResponseStatusException;
 
-import javax.ws.rs.BadRequestException;
+import javax.persistence.metamodel.SingularAttribute;
 import java.util.*;
 import java.util.stream.Collectors;
 
-@PluginInfo(version = 1)
+
 @Extension
 @Component
-@Primary
-public class CustomerDocumentService implements ServicePlugin {
 
-	@PluginInfo(version = 1)
+public class CustomerDocumentService implements Plugin {
+
+
 	@Autowired
 	private CustomerDocumentRepository repository;
 
 	@Autowired
-	private BaseclassNewService baseclassNewService;
+	private BasicService basicService;
 
-	public <T extends Baseclass> T getByIdOrNull(String id, Class<T> c,
-			List<String> batch, SecurityContext securityContext) {
-		return repository.getByIdOrNull(id, c, batch, securityContext);
-	}
 
-	public <T extends Baseclass> List<T> listByIds(Class<T> c, Set<String> ids,
-			SecurityContext securityContext) {
+	public <T extends Baseclass> List<T> listByIds(Class<T> c, Set<String> ids, SecurityContextBase securityContext) {
 		return repository.listByIds(c, ids, securityContext);
 	}
 
+	public <T extends Baseclass> T getByIdOrNull(String id, Class<T> c, SecurityContextBase securityContext) {
+		return repository.getByIdOrNull(id, c, securityContext);
+	}
+
+	public <D extends Basic, E extends Baseclass, T extends D> T getByIdOrNull(String id, Class<T> c, SingularAttribute<D, E> baseclassAttribute, SecurityContextBase securityContext) {
+		return repository.getByIdOrNull(id, c, baseclassAttribute, securityContext);
+	}
+
+	public <D extends Basic, E extends Baseclass, T extends D> List<T> listByIds(Class<T> c, Set<String> ids, SingularAttribute<D, E> baseclassAttribute, SecurityContextBase securityContext) {
+		return repository.listByIds(c, ids, baseclassAttribute, securityContext);
+	}
+
+	public <D extends Basic, T extends D> List<T> findByIds(Class<T> c, Set<String> ids, SingularAttribute<D, String> idAttribute) {
+		return repository.findByIds(c, ids, idAttribute);
+	}
+
+	public <T extends Basic> List<T> findByIds(Class<T> c, Set<String> requested) {
+		return repository.findByIds(c, requested);
+	}
+
+	public <T> T findByIdOrNull(Class<T> type, String id) {
+		return repository.findByIdOrNull(type, id);
+	}
+
+	@Transactional
+	public void merge(Object base) {
+		repository.merge(base);
+	}
+
+	@Transactional
+	public void massMerge(List<?> toMerge) {
+		repository.massMerge(toMerge);
+	}
+
 	public void validateFiltering(CustomerDocumentFiltering filtering,
-			SecurityContext securityContext) {
-		baseclassNewService.validateFilter(filtering, securityContext);
+			SecurityContextBase securityContextBase) {
+		basicService.validate(filtering, securityContextBase);
 		Set<String> customerIds = filtering.getCustomerIds();
-		Map<String, Customer> customers = customerIds.isEmpty() ? new HashMap<>() : listByIds(Customer.class, customerIds, securityContext).parallelStream().collect(Collectors.toMap(f -> f.getId(), f -> f));
+		Map<String, Customer> customers = customerIds.isEmpty() ? new HashMap<>() : listByIds(Customer.class, customerIds, SecuredBasic_.security, securityContextBase).parallelStream().collect(Collectors.toMap(f -> f.getId(), f -> f));
 		customerIds.removeAll(customers.keySet());
-		if (!customerIds.isEmpty()) { throw new BadRequestException("No Organization with ids " + customerIds);
+		if (!customerIds.isEmpty()) { throw new ResponseStatusException(HttpStatus.BAD_REQUEST,"No Organization with ids " + customerIds);
 		}
 		filtering.setCustomers(new ArrayList<>(customers.values()));
 	}
 
-	public PaginationResponse<CustomerDocument> getAllCustomerDocuments(SecurityContext securityContext, CustomerDocumentFiltering filtering) {
-		List<CustomerDocument> list = repository.getAllCustomerDocuments(securityContext, filtering);
-		long count = repository.countAllCustomerDocuments(securityContext, filtering);
+	public PaginationResponse<CustomerDocument> getAllCustomerDocuments(SecurityContextBase securityContextBase, CustomerDocumentFiltering filtering) {
+		List<CustomerDocument> list = repository.getAllCustomerDocuments(securityContextBase, filtering);
+		long count = repository.countAllCustomerDocuments(securityContextBase, filtering);
 		return new PaginationResponse<>(list, filtering, count);
 	}
 
 	public CustomerDocument createCustomerDocument(CustomerDocumentCreate creationContainer,
-			SecurityContext securityContext) {
-		CustomerDocument customerDocument = createCustomerDocumentNoMerge(creationContainer, securityContext);
+			SecurityContextBase securityContextBase) {
+		CustomerDocument customerDocument = createCustomerDocumentNoMerge(creationContainer, securityContextBase);
 		repository.merge(customerDocument);
 		return customerDocument;
 	}
 
 	private CustomerDocument createCustomerDocumentNoMerge(CustomerDocumentCreate creationContainer,
-			SecurityContext securityContext) {
-		CustomerDocument customerDocument = new CustomerDocument(creationContainer.getName(),securityContext);
+			SecurityContextBase securityContextBase) {
+		CustomerDocument customerDocument = new CustomerDocument();
+		Baseclass securityObjectNoMerge = BaseclassService.createSecurityObjectNoMerge(customerDocument, securityContextBase);
 		updateCustomerDocumentNoMerge(customerDocument, creationContainer);
 		return customerDocument;
 	}
 
 	private boolean updateCustomerDocumentNoMerge(CustomerDocument customerDocument,
 			CustomerDocumentCreate creationContainer) {
-		boolean update = baseclassNewService.updateBaseclassNoMerge(creationContainer, customerDocument);
+		boolean update = basicService.updateBasicNoMerge(creationContainer, customerDocument);
 
 		if (creationContainer.getCustomer() != null && (customerDocument.getCustomer() == null || !creationContainer.getCustomer().getId().equals(customerDocument.getCustomer().getId()))) {
 			customerDocument.setCustomer(creationContainer.getCustomer());
@@ -94,7 +128,7 @@ public class CustomerDocumentService implements ServicePlugin {
 	}
 
 	public CustomerDocument updateCustomerDocument(CustomerDocumentUpdate updateContainer,
-			SecurityContext securityContext) {
+			SecurityContextBase securityContextBase) {
 		CustomerDocument customerDocument = updateContainer.getCustomerDocument();
 		if (updateCustomerDocumentNoMerge(customerDocument, updateContainer)) {
 			repository.merge(customerDocument);
@@ -103,19 +137,19 @@ public class CustomerDocumentService implements ServicePlugin {
 	}
 
 	public void validate(CustomerDocumentCreate creationContainer,
-			SecurityContext securityContext) {
-		baseclassNewService.validate(creationContainer, securityContext);
+			SecurityContextBase securityContextBase) {
+		basicService.validate(creationContainer, securityContextBase);
 		String customerId = creationContainer.getCustomerId();
-		Customer customer = customerId == null ? null : getByIdOrNull(customerId, Customer.class, null, securityContext);
+		Customer customer = customerId == null ? null : getByIdOrNull(customerId, Customer.class, null, securityContextBase);
 		if (customer == null && customerId != null) {
-			throw new BadRequestException("No Customer with id " + customerId);
+			throw new ResponseStatusException(HttpStatus.BAD_REQUEST,"No Customer with id " + customerId);
 		}
 		creationContainer.setCustomer(customer);
 
 		String fileResourceId = creationContainer.getFileResourceId();
-		FileResource fileResource = fileResourceId == null ? null : getByIdOrNull(fileResourceId, FileResource.class, null, securityContext);
+		FileResource fileResource = fileResourceId == null ? null : getByIdOrNull(fileResourceId, FileResource.class, null, securityContextBase);
 		if (fileResource == null && fileResourceId != null) {
-			throw new BadRequestException("No FileResource with id " + fileResourceId);
+			throw new ResponseStatusException(HttpStatus.BAD_REQUEST,"No FileResource with id " + fileResourceId);
 		}
 		creationContainer.setFileResource(fileResource);
 	}

@@ -1,124 +1,143 @@
 package com.flexicore.organization.service;
 
-import com.flexicore.annotations.plugins.PluginInfo;
-import com.flexicore.data.jsoncontainers.PaginationResponse;
+
 import com.flexicore.model.Baseclass;
+import com.flexicore.model.Basic;
 import com.flexicore.model.territories.Address;
+import com.flexicore.model.territories.Address_;
 import com.flexicore.organization.data.SiteRepository;
-import com.flexicore.organization.interfaces.ISiteService;
 import com.flexicore.organization.model.Site;
 import com.flexicore.organization.request.SiteCreate;
 import com.flexicore.organization.request.SiteFiltering;
 import com.flexicore.organization.request.SiteUpdate;
-import com.flexicore.security.SecurityContext;
+import com.flexicore.security.SecurityContextBase;
+import com.wizzdi.flexicore.boot.base.interfaces.Plugin;
+import com.wizzdi.flexicore.security.response.PaginationResponse;
+import com.wizzdi.flexicore.security.service.BaseclassService;
+import com.wizzdi.flexicore.security.service.BasicService;
+import org.pf4j.Extension;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.server.ResponseStatusException;
 
-import javax.ws.rs.BadRequestException;
+import javax.persistence.metamodel.SingularAttribute;
 import java.util.*;
 import java.util.stream.Collectors;
-import org.pf4j.Extension;
-import org.springframework.context.annotation.Primary;
-import org.springframework.stereotype.Component;
-import org.springframework.beans.factory.annotation.Autowired;
 
-@PluginInfo(version = 1)
+
 @Extension
 @Component
-@Primary
-public class SiteService implements ISiteService {
 
-	@PluginInfo(version = 1)
+public class SiteService implements Plugin {
+
+
 	@Autowired
 	private SiteRepository repository;
+	@Autowired
+	private BasicService basicService;
 
-	public <T extends Baseclass> T getByIdOrNull(String id, Class<T> c,
-			List<String> batch, SecurityContext securityContext) {
-		return repository.getByIdOrNull(id, c, batch, securityContext);
-	}
 
-	public <T extends Baseclass> List<T> listByIds(Class<T> c, Set<String> ids,
-			SecurityContext securityContext) {
+	public <T extends Baseclass> List<T> listByIds(Class<T> c, Set<String> ids, SecurityContextBase securityContext) {
 		return repository.listByIds(c, ids, securityContext);
 	}
 
-	@Override
+	public <T extends Baseclass> T getByIdOrNull(String id, Class<T> c, SecurityContextBase securityContext) {
+		return repository.getByIdOrNull(id, c, securityContext);
+	}
+
+	public <D extends Basic, E extends Baseclass, T extends D> T getByIdOrNull(String id, Class<T> c, SingularAttribute<D, E> baseclassAttribute, SecurityContextBase securityContext) {
+		return repository.getByIdOrNull(id, c, baseclassAttribute, securityContext);
+	}
+
+	public <D extends Basic, E extends Baseclass, T extends D> List<T> listByIds(Class<T> c, Set<String> ids, SingularAttribute<D, E> baseclassAttribute, SecurityContextBase securityContext) {
+		return repository.listByIds(c, ids, baseclassAttribute, securityContext);
+	}
+
+	public <D extends Basic, T extends D> List<T> findByIds(Class<T> c, Set<String> ids, SingularAttribute<D, String> idAttribute) {
+		return repository.findByIds(c, ids, idAttribute);
+	}
+
+	public <T extends Basic> List<T> findByIds(Class<T> c, Set<String> requested) {
+		return repository.findByIds(c, requested);
+	}
+
+	public <T> T findByIdOrNull(Class<T> type, String id) {
+		return repository.findByIdOrNull(type, id);
+	}
+
+	@Transactional
+	public void merge(Object base) {
+		repository.merge(base);
+	}
+
+	@Transactional
+	public void massMerge(List<?> toMerge) {
+		repository.massMerge(toMerge);
+	}
+
+
 	public void validateFiltering(SiteFiltering filtering,
-			SecurityContext securityContext) {
+								  SecurityContextBase securityContextBase) {
+		basicService.validate(filtering, securityContextBase);
 		Set<String> addressIds = filtering.getAddressIds();
-		Map<String, Address> address = addressIds.isEmpty()
-				? new HashMap<>()
-				: listByIds(Address.class, addressIds, securityContext)
-						.parallelStream().collect(
-								Collectors.toMap(f -> f.getId(), f -> f));
+		Map<String, Address> address = addressIds.isEmpty() ? new HashMap<>() : listByIds(Address.class, addressIds, Address_.security, securityContextBase).parallelStream().collect(Collectors.toMap(f -> f.getId(), f -> f));
 		addressIds.removeAll(address.keySet());
 		if (!addressIds.isEmpty()) {
-			throw new BadRequestException("No Address with ids " + addressIds);
+			throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "No Address with ids " + addressIds);
 		}
 		filtering.setAddresses(new ArrayList<>(address.values()));
 	}
 
-	@Override
+
 	public PaginationResponse<Site> getAllSites(
-			SecurityContext securityContext, SiteFiltering filtering) {
-		List<Site> list = listAllSites(securityContext, filtering);
-		long count = repository.countAllSites(securityContext, filtering);
+			SecurityContextBase securityContextBase, SiteFiltering filtering) {
+		List<Site> list = listAllSites(securityContextBase, filtering);
+		long count = repository.countAllSites(securityContextBase, filtering);
 		return new PaginationResponse<>(list, filtering, count);
 	}
 
-	@Override
-	public List<Site> listAllSites(SecurityContext securityContext,
-			SiteFiltering filtering) {
-		return repository.getAllSites(securityContext, filtering);
+
+	public List<Site> listAllSites(SecurityContextBase securityContextBase,
+								   SiteFiltering filtering) {
+		return repository.getAllSites(securityContextBase, filtering);
 	}
 
 	public Site createSite(SiteCreate creationContainer,
-			SecurityContext securityContext) {
-		Site site = createSiteNoMerge(creationContainer, securityContext);
+						   SecurityContextBase securityContextBase) {
+		Site site = createSiteNoMerge(creationContainer, securityContextBase);
 		repository.merge(site);
 		return site;
 	}
 
-	@Override
+
 	public Site createSiteNoMerge(SiteCreate creationContainer,
-			SecurityContext securityContext) {
-		Site site = new Site(creationContainer.getName(),securityContext);
+								  SecurityContextBase securityContextBase) {
+		Site site = new Site();
 		updateSiteNoMerge(site, creationContainer);
+		BaseclassService.createSecurityObjectNoMerge(site, securityContextBase);
+
 		return site;
 	}
 
-	@Override
+
 	public boolean updateSiteNoMerge(Site site, SiteCreate creationContainer) {
-		boolean update = false;
-		if (creationContainer.getName() != null
-				&& !creationContainer.getName().equals(site.getName())) {
-			site.setName(creationContainer.getName());
-			update = true;
-		}
+		boolean update = basicService.updateBasicNoMerge(creationContainer, site);
 
-		if (creationContainer.getDescription() != null
-				&& !creationContainer.getDescription().equals(
-						site.getDescription())) {
-			site.setDescription(creationContainer.getDescription());
-			update = true;
-		}
-
-		if (creationContainer.getAddress() != null
-				&& (site.getAddress() == null || !creationContainer
-						.getAddress().getId().equals(site.getAddress().getId()))) {
+		if (creationContainer.getAddress() != null && (site.getAddress() == null || !creationContainer.getAddress().getId().equals(site.getAddress().getId()))) {
 			site.setAddress(creationContainer.getAddress());
 			update = true;
 		}
 
-		if (creationContainer.getExternalId() != null
-				&& !creationContainer.getExternalId().equals(
-						site.getExternalId())) {
+		if (creationContainer.getExternalId() != null && !creationContainer.getExternalId().equals(site.getExternalId())) {
 			site.setExternalId(creationContainer.getExternalId());
 			update = true;
 		}
 		return update;
 	}
 
-	public Site updateSite(SiteUpdate updateContainer,
-			SecurityContext securityContext) {
+	public Site updateSite(SiteUpdate updateContainer, SecurityContextBase securityContextBase) {
 		Site site = updateContainer.getSite();
 		if (updateSiteNoMerge(site, updateContainer)) {
 			repository.merge(site);
@@ -126,20 +145,17 @@ public class SiteService implements ISiteService {
 		return site;
 	}
 
-	@Override
-	public void validate(SiteCreate creationContainer,
-			SecurityContext securityContext) {
+
+	public void validate(SiteCreate creationContainer, SecurityContextBase securityContextBase) {
+		basicService.validate(creationContainer,securityContextBase);
 		String addressId = creationContainer.getAddressId();
 		Address address = addressId == null ? null : getByIdOrNull(addressId,
-				Address.class, null, securityContext);
+				Address.class, Address_.security, securityContextBase);
 		if (address == null && addressId != null) {
-			throw new BadRequestException("No Address with id " + addressId);
+			throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "No Address with id " + addressId);
 		}
 		creationContainer.setAddress(address);
 	}
 
-	@Override
-	public void massMerge(List<?> toMerge) {
-		repository.massMerge(toMerge);
-	}
+
 }

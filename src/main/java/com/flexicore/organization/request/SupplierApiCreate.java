@@ -1,28 +1,10 @@
 package com.flexicore.organization.request;
 
-public class SupplierApiCreate {
+import com.wizzdi.flexicore.security.request.BasicCreate;
 
-	private String name;
-	private String description;
+public class SupplierApiCreate extends BasicCreate {
+
 	private String implementorCanonicalName;
-
-	public String getName() {
-		return name;
-	}
-
-	public <T extends SupplierApiCreate> T setName(String name) {
-		this.name = name;
-		return (T) this;
-	}
-
-	public String getDescription() {
-		return description;
-	}
-
-	public <T extends SupplierApiCreate> T setDescription(String description) {
-		this.description = description;
-		return (T) this;
-	}
 
 	public String getImplementorCanonicalName() {
 		return implementorCanonicalName;

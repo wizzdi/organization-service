@@ -2,49 +2,40 @@ package com.flexicore.organization.rest;
 
 import com.flexicore.annotations.IOperation;
 import com.flexicore.annotations.OperationsInside;
-import com.flexicore.annotations.ProtectedREST;
-import com.flexicore.annotations.UnProtectedREST;
-import com.flexicore.annotations.plugins.PluginInfo;
-import com.flexicore.data.jsoncontainers.PaginationResponse;
-import com.flexicore.interfaces.RestServicePlugin;
 import com.flexicore.organization.model.Industry;
-import com.flexicore.organization.request.IndustryCreate;
 import com.flexicore.organization.request.IndustryFiltering;
-import com.flexicore.organization.request.IndustryUpdate;
 import com.flexicore.organization.service.IndustryService;
-import com.flexicore.security.SecurityContext;
+import com.wizzdi.flexicore.boot.base.interfaces.Plugin;
+import com.wizzdi.flexicore.security.response.PaginationResponse;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.pf4j.Extension;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
 
-import javax.enterprise.context.RequestScoped;
-import javax.ws.rs.*;
-import javax.ws.rs.core.Context;
 
-@PluginInfo(version = 1)
 @OperationsInside
-@UnProtectedREST
-@Path("plugins/UnsecureIndustry")
-@RequestScoped
+@RequestMapping("plugins/UnsecureIndustry")
+
 @Tag(name = "Industry Unsecure")
 @Extension
 @Component
-public class IndustryUnsecureRESTService implements RestServicePlugin {
+public class IndustryUnsecureController implements Plugin {
 
-	@PluginInfo(version = 1)
+
 	@Autowired
 	private IndustryService service;
 
 
-	@POST
-	@Produces("application/json")
+
 	@Operation(summary = "getAllIndustries", description = "Lists all Industries")
 	@IOperation(Name = "getAllIndustries", Description = "Lists all Industries")
-	@Path("getAllIndustries")
+	@PostMapping("getAllIndustries")
 	public PaginationResponse<Industry> getAllIndustries(
-			IndustryFiltering filtering) {
+			@RequestBody IndustryFiltering filtering) {
 
 		service.validateFiltering(filtering, null);
 		return service.getAllIndustries(null, filtering);

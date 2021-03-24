@@ -3,7 +3,7 @@ package com.flexicore.organization.request;
 import com.wizzdi.flexicore.security.request.BasicPropertiesFilter;
 import com.wizzdi.flexicore.security.request.PaginationFilter;
 
-public class EmployeeFiltering extends PaginationFilter {
+public class SalesPersonToRegionFiltering extends PaginationFilter {
 
 	private BasicPropertiesFilter basicPropertiesFilter;
 
@@ -11,7 +11,7 @@ public class EmployeeFiltering extends PaginationFilter {
 		return basicPropertiesFilter;
 	}
 
-	public <T extends EmployeeFiltering> T setBasicPropertiesFilter(BasicPropertiesFilter basicPropertiesFilter) {
+	public <T extends SalesPersonToRegionFiltering> T setBasicPropertiesFilter(BasicPropertiesFilter basicPropertiesFilter) {
 		this.basicPropertiesFilter = basicPropertiesFilter;
 		return (T) this;
 	}

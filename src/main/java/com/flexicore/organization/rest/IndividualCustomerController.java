@@ -2,84 +2,78 @@ package com.flexicore.organization.rest;
 
 import com.flexicore.annotations.IOperation;
 import com.flexicore.annotations.OperationsInside;
-import com.flexicore.annotations.ProtectedREST;
-import com.flexicore.annotations.plugins.PluginInfo;
-import com.flexicore.data.jsoncontainers.PaginationResponse;
-import com.flexicore.interfaces.RestServicePlugin;
 import com.flexicore.organization.model.IndividualCustomer;
 import com.flexicore.organization.request.IndividualCustomerCreate;
 import com.flexicore.organization.request.IndividualCustomerFiltering;
 import com.flexicore.organization.request.IndividualCustomerUpdate;
 import com.flexicore.organization.service.IndividualCustomerService;
-import com.flexicore.security.SecurityContext;
+import com.flexicore.security.SecurityContextBase;
+import com.wizzdi.flexicore.boot.base.interfaces.Plugin;
+import com.wizzdi.flexicore.security.response.PaginationResponse;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.pf4j.Extension;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Component;
+import org.springframework.web.bind.annotation.*;
+import org.springframework.web.server.ResponseStatusException;
 
-import javax.enterprise.context.RequestScoped;
-import javax.ws.rs.*;
-import javax.ws.rs.core.Context;
 
-@PluginInfo(version = 1)
 @OperationsInside
-@ProtectedREST
-@Path("plugins/IndividualCustomer")
-@RequestScoped
+
+@RequestMapping("plugins/IndividualCustomer")
+
 @Tag(name = "IndividualCustomer")
 @Extension
 @Component
-public class IndividualCustomerRESTService implements RestServicePlugin {
+public class IndividualCustomerController implements Plugin {
 
-	@PluginInfo(version = 1)
+
 	@Autowired
 	private IndividualCustomerService service;
 
-	@POST
-	@Produces("application/json")
+
 	@Operation(summary = "getAllIndividualCustomers", description = "Lists all IndividualCustomers")
 	@IOperation(Name = "getAllIndividualCustomers", Description = "Lists all IndividualCustomers")
-	@Path("getAllIndividualCustomers")
+	@PostMapping("getAllIndividualCustomers")
 	public PaginationResponse<IndividualCustomer> getAllIndividualCustomers(
-			@HeaderParam("authenticationKey") String authenticationKey,
-			IndividualCustomerFiltering filtering, @Context SecurityContext securityContext) {
-		service.validateFiltering(filtering, securityContext);
-		return service.getAllIndividualCustomers(securityContext, filtering);
+
+			@RequestBody IndividualCustomerFiltering filtering, @RequestAttribute SecurityContextBase securityContextBase) {
+		service.validateFiltering(filtering, securityContextBase);
+		return service.getAllIndividualCustomers(securityContextBase, filtering);
 	}
 
-	@POST
-	@Produces("application/json")
-	@Path("/createIndividualCustomer")
+
+	@PostMapping("/createIndividualCustomer")
 	@Operation(summary = "createIndividualCustomer", description = "Creates IndividualCustomer")
 	@IOperation(Name = "createIndividualCustomer", Description = "Creates IndividualCustomer")
 	public IndividualCustomer createIndividualCustomer(
-			@HeaderParam("authenticationKey") String authenticationKey,
-			IndividualCustomerCreate creationContainer,
-			@Context SecurityContext securityContext) {
-		service.validate(creationContainer, securityContext);
 
-		return service.createIndividualCustomer(creationContainer, securityContext);
+			@RequestBody IndividualCustomerCreate creationContainer,
+			@RequestAttribute SecurityContextBase securityContextBase) {
+		service.validate(creationContainer, securityContextBase);
+
+		return service.createIndividualCustomer(creationContainer, securityContextBase);
 	}
 
-	@POST
-	@Produces("application/json")
-	@Path("/updateIndividualCustomer")
+
+	@PutMapping("/updateIndividualCustomer")
 	@Operation(summary = "updateIndividualCustomer", description = "Updates IndividualCustomer")
 	@IOperation(Name = "updateIndividualCustomer", Description = "Updates IndividualCustomer")
 	public IndividualCustomer updateIndividualCustomer(
-			@HeaderParam("authenticationKey") String authenticationKey,
-			IndividualCustomerUpdate updateContainer,
-			@Context SecurityContext securityContext) {
-		service.validate(updateContainer, securityContext);
+
+			@RequestBody IndividualCustomerUpdate updateContainer,
+			@RequestAttribute SecurityContextBase securityContextBase) {
+		service.validate(updateContainer, securityContextBase);
 		IndividualCustomer individualCustomer = service.getByIdOrNull(updateContainer.getId(),
-				IndividualCustomer.class, null, securityContext);
+				IndividualCustomer.class, null, securityContextBase);
 		if (individualCustomer == null) {
-			throw new BadRequestException("no IndividualCustomer with id "
+			throw new ResponseStatusException(HttpStatus.BAD_REQUEST,"no IndividualCustomer with id "
 					+ updateContainer.getId());
 		}
 		updateContainer.setIndividualCustomer(individualCustomer);
 
-		return service.updateIndividualCustomer(updateContainer, securityContext);
+		return service.updateIndividualCustomer(updateContainer, securityContextBase);
 	}
 }

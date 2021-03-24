@@ -2,33 +2,14 @@ package com.flexicore.organization.request;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.flexicore.model.territories.Address;
+import com.wizzdi.flexicore.security.request.BasicCreate;
 
-public class SiteCreate {
+public class SiteCreate extends BasicCreate {
 
-	private String name;
-	private String description;
 	private String addressId;
 	@JsonIgnore
 	private Address address;
 	private String externalId;
-
-	public String getName() {
-		return name;
-	}
-
-	public SiteCreate setName(String name) {
-		this.name = name;
-		return this;
-	}
-
-	public String getDescription() {
-		return description;
-	}
-
-	public SiteCreate setDescription(String description) {
-		this.description = description;
-		return this;
-	}
 
 	public String getAddressId() {
 		return addressId;

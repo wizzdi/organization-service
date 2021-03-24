@@ -1,7 +1,7 @@
 package com.flexicore.organization.request;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.flexicore.model.User;
+import com.flexicore.model.SecurityUser;
 import com.flexicore.organization.model.Organization;
 
 import java.util.HashSet;

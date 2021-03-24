@@ -1,14 +1,18 @@
 package com.flexicore.organization.request;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.flexicore.model.FilteringInformationHolder;
 import com.flexicore.model.territories.Address;
+import com.wizzdi.flexicore.security.request.BasicPropertiesFilter;
+import com.wizzdi.flexicore.security.request.PaginationFilter;
 
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-public class SiteFiltering extends FilteringInformationHolder {
+public class SiteFiltering extends PaginationFilter {
+
+	private BasicPropertiesFilter basicPropertiesFilter;
+
 
 	private Set<String> addressIds = new HashSet<>();
 	@JsonIgnore
@@ -16,13 +20,22 @@ public class SiteFiltering extends FilteringInformationHolder {
 
 	private Set<String> externalIds = new HashSet<>();
 
+	public BasicPropertiesFilter getBasicPropertiesFilter() {
+		return basicPropertiesFilter;
+	}
+
+	public <T extends SiteFiltering> T setBasicPropertiesFilter(BasicPropertiesFilter basicPropertiesFilter) {
+		this.basicPropertiesFilter = basicPropertiesFilter;
+		return (T) this;
+	}
+
 	public Set<String> getAddressIds() {
 		return addressIds;
 	}
 
-	public SiteFiltering setAddressIds(Set<String> addressIds) {
+	public <T extends SiteFiltering> T setAddressIds(Set<String> addressIds) {
 		this.addressIds = addressIds;
-		return this;
+		return (T) this;
 	}
 
 	@JsonIgnore
@@ -30,17 +43,17 @@ public class SiteFiltering extends FilteringInformationHolder {
 		return addresses;
 	}
 
-	public SiteFiltering setAddresses(List<Address> addresses) {
+	public <T extends SiteFiltering> T setAddresses(List<Address> addresses) {
 		this.addresses = addresses;
-		return this;
+		return (T) this;
 	}
 
 	public Set<String> getExternalIds() {
 		return externalIds;
 	}
 
-	public SiteFiltering setExternalIds(Set<String> externalIds) {
+	public <T extends SiteFiltering> T setExternalIds(Set<String> externalIds) {
 		this.externalIds = externalIds;
-		return this;
+		return (T) this;
 	}
 }

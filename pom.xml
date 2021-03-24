@@ -2,7 +2,7 @@
   <modelVersion>4.0.0</modelVersion>
   <groupId>com.wizzdi</groupId>
   <artifactId>organization-service</artifactId>
-  <version>2.1.4-SNAPSHOT</version>
+  <version>3.0.0-SNAPSHOT</version>
   <name>organization-service</name>
   <description>FlexiCore service plugin , managing organizations</description>
   <url>https://wizzdi.com</url>
@@ -15,14 +15,13 @@
     </license>
   </licenses>
   <properties>
-    <flexicore-api.version>4.2.4</flexicore-api.version>
-    <maven.compiler.source>1.8</maven.compiler.source>
-    <version.compiler.plugin>3.3</version.compiler.plugin>
-    <version.jackson>2.11.0</version.jackson>
-    <version.eclipselink>2.7.7</version.eclipselink>
-    <maven.compiler.target>1.8</maven.compiler.target>
-    <version.war.plugin>2.5</version.war.plugin>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+    <maven.compiler.source>11</maven.compiler.source>
+    <maven.compiler.target>11</maven.compiler.target>
+    <version.compiler.plugin>3.3</version.compiler.plugin>
+    <version.eclipselink>2.7.7</version.eclipselink>
+
+    <version.war.plugin>2.5</version.war.plugin>
     <version.surefire.plugin>2.16</version.surefire.plugin>
     <pf4j-spring.version>0.6.0</pf4j-spring.version>
     <swagger.version>2.0.8</swagger.version>
@@ -68,61 +67,71 @@
         <type>pom</type>
         <scope>import</scope>
       </dependency>
+      <dependency>
+        <groupId>com.wizzdi</groupId>
+        <artifactId>flexicore-boot-dependencies</artifactId>
+        <version>1.0.3</version>
+        <type>pom</type>
+        <scope>import</scope>
+      </dependency>
     </dependencies>
   </dependencyManagement>
   <dependencies>
-
-    <dependency>
-      <groupId>javax.enterprise</groupId>
-      <artifactId>cdi-api</artifactId>
-      <version>2.0</version>
-      <scope>provided</scope>
-    </dependency>
     <dependency>
       <groupId>io.swagger.core.v3</groupId>
       <artifactId>swagger-jaxrs2</artifactId>
-      <version>${swagger.version}</version>
-      <scope>provided</scope>
-    </dependency>
-    <dependency>
-      <groupId>com.wizzdi</groupId>
-      <artifactId>organization-model</artifactId>
       <version>2.1.2</version>
-      <scope>provided</scope>
-    </dependency>
-    <dependency>
-      <groupId>com.wizzdi</groupId>
-      <artifactId>flexicore-territories-model</artifactId>
-      <version>2.1.0</version>
-      <scope>provided</scope>
-    </dependency>
-    <dependency>
-      <groupId>org.springframework.boot</groupId>
-      <artifactId>spring-boot-starter-actuator</artifactId>
-      <scope>provided</scope>
-    </dependency>
-    <dependency>
-      <groupId>javax</groupId>
-      <artifactId>javaee-api</artifactId>
-      <version>8.0</version>
       <scope>provided</scope>
     </dependency>
     <dependency>
       <groupId>com.fasterxml.jackson.core</groupId>
       <artifactId>jackson-databind</artifactId>
-      <version>${version.jackson}</version>
-      <scope>provided</scope>
-    </dependency>
-    <dependency>
-      <groupId>org.eclipse.persistence</groupId>
-      <artifactId>org.eclipse.persistence.jpa</artifactId>
-      <version>${version.eclipselink}</version>
       <scope>provided</scope>
     </dependency>
     <dependency>
       <groupId>com.wizzdi</groupId>
-      <artifactId>flexicore-api</artifactId>
-      <version>${flexicore-api.version}</version>
+      <artifactId>organization-model</artifactId>
+      <version>3.0.0-SNAPSHOT</version>
+      <scope>provided</scope>
+    </dependency>
+    <dependency>
+      <groupId>com.wizzdi</groupId>
+      <artifactId>flexicore-boot</artifactId>
+      <scope>provided</scope>
+    </dependency>
+    <dependency>
+      <groupId>com.wizzdi</groupId>
+      <artifactId>flexicore-boot-starter-web</artifactId>
+      <scope>provided</scope>
+    </dependency>
+    <dependency>
+      <groupId>com.wizzdi</groupId>
+      <artifactId>flexicore-territories-model</artifactId>
+      <version>3.0.0-SNAPSHOT</version>
+      <scope>provided</scope>
+    </dependency>
+    <dependency>
+      <groupId>com.wizzdi</groupId>
+      <artifactId>flexicore-security-model</artifactId>
+      <version>1.0.5-SNAPSHOT</version>
+      <scope>provided</scope>
+    </dependency>
+    <dependency>
+      <groupId>com.wizzdi</groupId>
+      <artifactId>flexicore-security-service</artifactId>
+      <version>1.0.5-SNAPSHOT</version>
+      <scope>provided</scope>
+    </dependency>
+    <dependency>
+      <groupId>com.wizzdi</groupId>
+      <artifactId>flexicore-file-model</artifactId>
+      <version>1.0.0-SNAPSHOT</version>
+      <scope>provided</scope>
+    </dependency>
+    <dependency>
+      <groupId>com.wizzdi</groupId>
+      <artifactId>flexicore-file-service</artifactId>
+      <version>1.0.0-SNAPSHOT</version>
       <scope>provided</scope>
     </dependency>
     <dependency>
@@ -130,6 +139,16 @@
       <artifactId>pf4j-spring</artifactId>
       <version>${pf4j-spring.version}</version>
       <scope>provided</scope>
+      <exclusions>
+        <exclusion>
+          <artifactId>log4j</artifactId>
+          <groupId>log4j</groupId>
+        </exclusion>
+        <exclusion>
+          <artifactId>slf4j-log4j12</artifactId>
+          <groupId>org.slf4j</groupId>
+        </exclusion>
+      </exclusions>
     </dependency>
   </dependencies>
   <build>
@@ -228,11 +247,6 @@
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-javadoc-plugin</artifactId>
         <version>3.2.0</version>
-        <configuration>
-          <javadocExecutable>C:\Program Files\AdoptOpenJDK\jdk-8.0.212.03-hotspot\bin\javadoc.exe
-          </javadocExecutable>
-          <javadocVersion>1.8.0</javadocVersion>
-        </configuration>
       </plugin>
     </plugins>
   </build>

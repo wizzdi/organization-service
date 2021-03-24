@@ -3,9 +3,9 @@ package com.flexicore.organization.request;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.flexicore.organization.model.Customer;
 import com.flexicore.organization.model.Industry;
-import com.flexicore.request.BaseclassCreate;
+import com.wizzdi.flexicore.security.request.BasicCreate;
 
-public class IndustryToCustomerCreate extends BaseclassCreate {
+public class IndustryToCustomerCreate extends BasicCreate {
 
     private String industryId;
     @JsonIgnore

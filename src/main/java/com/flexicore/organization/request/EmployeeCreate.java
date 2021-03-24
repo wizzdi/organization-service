@@ -1,6 +1,7 @@
 package com.flexicore.organization.request;
 
-import com.flexicore.request.UserCreate;
 
-public class EmployeeCreate extends UserCreate {
+import com.wizzdi.flexicore.security.request.BasicCreate;
+
+public class EmployeeCreate extends BasicCreate {
 }

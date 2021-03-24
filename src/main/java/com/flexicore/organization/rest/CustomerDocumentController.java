@@ -2,84 +2,83 @@ package com.flexicore.organization.rest;
 
 import com.flexicore.annotations.IOperation;
 import com.flexicore.annotations.OperationsInside;
-import com.flexicore.annotations.ProtectedREST;
-import com.flexicore.annotations.plugins.PluginInfo;
-import com.flexicore.data.jsoncontainers.PaginationResponse;
-import com.flexicore.interfaces.RestServicePlugin;
+
+
+import com.wizzdi.flexicore.security.response.PaginationResponse;
+import com.wizzdi.flexicore.boot.base.interfaces.Plugin;
 import com.flexicore.organization.model.CustomerDocument;
 import com.flexicore.organization.request.CustomerDocumentCreate;
 import com.flexicore.organization.request.CustomerDocumentFiltering;
 import com.flexicore.organization.request.CustomerDocumentUpdate;
 import com.flexicore.organization.service.CustomerDocumentService;
-import com.flexicore.security.SecurityContext;
+import com.flexicore.security.SecurityContextBase;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.pf4j.Extension;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
+import org.springframework.web.bind.annotation.*;
 
-import javax.enterprise.context.RequestScoped;
-import javax.ws.rs.*;
-import javax.ws.rs.core.Context;
+import org.springframework.web.bind.annotation.*;
+import org.springframework.web.server.ResponseStatusException;
+import org.springframework.http.HttpStatus;
 
-@PluginInfo(version = 1)
+
+
 @OperationsInside
-@ProtectedREST
-@Path("plugins/CustomerDocument")
-@RequestScoped
+
+@RequestMapping("plugins/CustomerDocument")
+
 @Tag(name = "CustomerDocument")
 @Extension
 @Component
-public class CustomerDocumentRESTService implements RestServicePlugin {
+public class CustomerDocumentController implements Plugin {
 
-	@PluginInfo(version = 1)
+
 	@Autowired
 	private CustomerDocumentService service;
 
-	@POST
-	@Produces("application/json")
+
 	@Operation(summary = "getAllCustomerDocuments", description = "Lists all CustomerDocuments")
 	@IOperation(Name = "getAllCustomerDocuments", Description = "Lists all CustomerDocuments")
-	@Path("getAllCustomerDocuments")
+	@PostMapping("getAllCustomerDocuments")
 	public PaginationResponse<CustomerDocument> getAllCustomerDocuments(
-			@HeaderParam("authenticationKey") String authenticationKey,
-			CustomerDocumentFiltering filtering, @Context SecurityContext securityContext) {
-		service.validateFiltering(filtering, securityContext);
-		return service.getAllCustomerDocuments(securityContext, filtering);
+
+			@RequestBody CustomerDocumentFiltering filtering, @RequestAttribute SecurityContextBase securityContextBase) {
+		service.validateFiltering(filtering, securityContextBase);
+		return service.getAllCustomerDocuments(securityContextBase, filtering);
 	}
 
-	@POST
-	@Produces("application/json")
-	@Path("/createCustomerDocument")
+
+	@PostMapping("/createCustomerDocument")
 	@Operation(summary = "createCustomerDocument", description = "Creates CustomerDocument")
 	@IOperation(Name = "createCustomerDocument", Description = "Creates CustomerDocument")
 	public CustomerDocument createCustomerDocument(
-			@HeaderParam("authenticationKey") String authenticationKey,
-			CustomerDocumentCreate creationContainer,
-			@Context SecurityContext securityContext) {
-		service.validate(creationContainer, securityContext);
 
-		return service.createCustomerDocument(creationContainer, securityContext);
+			@RequestBody CustomerDocumentCreate creationContainer,
+			@RequestAttribute SecurityContextBase securityContextBase) {
+		service.validate(creationContainer, securityContextBase);
+
+		return service.createCustomerDocument(creationContainer, securityContextBase);
 	}
 
-	@POST
-	@Produces("application/json")
-	@Path("/updateCustomerDocument")
+
+	@PutMapping("/updateCustomerDocument")
 	@Operation(summary = "updateCustomerDocument", description = "Updates CustomerDocument")
 	@IOperation(Name = "updateCustomerDocument", Description = "Updates CustomerDocument")
 	public CustomerDocument updateCustomerDocument(
-			@HeaderParam("authenticationKey") String authenticationKey,
-			CustomerDocumentUpdate updateContainer,
-			@Context SecurityContext securityContext) {
-		service.validate(updateContainer, securityContext);
+
+			@RequestBody CustomerDocumentUpdate updateContainer,
+			@RequestAttribute SecurityContextBase securityContextBase) {
+		service.validate(updateContainer, securityContextBase);
 		CustomerDocument customerDocument = service.getByIdOrNull(updateContainer.getId(),
-				CustomerDocument.class, null, securityContext);
+				CustomerDocument.class, null, securityContextBase);
 		if (customerDocument == null) {
-			throw new BadRequestException("no CustomerDocument with id "
+			throw new ResponseStatusException(HttpStatus.BAD_REQUEST,"no CustomerDocument with id "
 					+ updateContainer.getId());
 		}
 		updateContainer.setCustomerDocument(customerDocument);
 
-		return service.updateCustomerDocument(updateContainer, securityContext);
+		return service.updateCustomerDocument(updateContainer, securityContextBase);
 	}
 }

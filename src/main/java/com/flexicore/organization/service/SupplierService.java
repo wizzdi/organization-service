@@ -1,72 +1,113 @@
 package com.flexicore.organization.service;
 
-import com.flexicore.annotations.plugins.PluginInfo;
-import com.flexicore.data.jsoncontainers.PaginationResponse;
+
 import com.flexicore.model.Baseclass;
+import com.flexicore.model.Basic;
 import com.flexicore.organization.data.SupplierRepository;
-import com.flexicore.organization.interfaces.ISupplierService;
 import com.flexicore.organization.model.Supplier;
 import com.flexicore.organization.model.SupplierApi;
-import com.flexicore.organization.request.*;
-import com.flexicore.security.SecurityContext;
-
-import javax.ws.rs.BadRequestException;
-import java.util.*;
-import java.util.logging.Logger;
-import java.util.stream.Collectors;
+import com.flexicore.organization.request.SupplierCreate;
+import com.flexicore.organization.request.SupplierFiltering;
+import com.flexicore.organization.request.SupplierUpdate;
+import com.flexicore.security.SecurityContextBase;
+import com.wizzdi.flexicore.boot.base.interfaces.Plugin;
+import com.wizzdi.flexicore.security.request.BasicPropertiesFilter;
+import com.wizzdi.flexicore.security.response.PaginationResponse;
+import com.wizzdi.flexicore.security.service.BaseclassService;
 import org.pf4j.Extension;
-import org.springframework.context.annotation.Primary;
-import org.springframework.stereotype.Component;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.server.ResponseStatusException;
 
-@PluginInfo(version = 1)
+import javax.persistence.metamodel.SingularAttribute;
+import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
+
+
 @Extension
 @Component
-@Primary
-public class SupplierService implements ISupplierService {
 
-	@PluginInfo(version = 1)
+public class SupplierService implements Plugin {
+
+	private static final Logger logger = LoggerFactory.getLogger(SupplierService.class);
+
 	@Autowired
 	private SupplierRepository repository;
 	@Autowired
-	private Logger logger;
+	private OrganizationService organizationService;
 
-	public <T extends Baseclass> T getByIdOrNull(String id, Class<T> c,
-			List<String> batch, SecurityContext securityContext) {
-		return repository.getByIdOrNull(id, c, batch, securityContext);
-	}
 
-	public <T extends Baseclass> List<T> listByIds(Class<T> c, Set<String> ids,
-			SecurityContext securityContext) {
+	public <T extends Baseclass> List<T> listByIds(Class<T> c, Set<String> ids, SecurityContextBase securityContext) {
 		return repository.listByIds(c, ids, securityContext);
 	}
 
-	public PaginationResponse<Supplier> listAllSuppliers(
-			SecurityContext securityContext, SupplierFiltering filtering) {
+	public <T extends Baseclass> T getByIdOrNull(String id, Class<T> c, SecurityContextBase securityContext) {
+		return repository.getByIdOrNull(id, c, securityContext);
+	}
 
-		List<Supplier> endpoints = repository.getAllSuppliers(securityContext,
+	public <D extends Basic, E extends Baseclass, T extends D> T getByIdOrNull(String id, Class<T> c, SingularAttribute<D, E> baseclassAttribute, SecurityContextBase securityContext) {
+		return repository.getByIdOrNull(id, c, baseclassAttribute, securityContext);
+	}
+
+	public <D extends Basic, E extends Baseclass, T extends D> List<T> listByIds(Class<T> c, Set<String> ids, SingularAttribute<D, E> baseclassAttribute, SecurityContextBase securityContext) {
+		return repository.listByIds(c, ids, baseclassAttribute, securityContext);
+	}
+
+	public <D extends Basic, T extends D> List<T> findByIds(Class<T> c, Set<String> ids, SingularAttribute<D, String> idAttribute) {
+		return repository.findByIds(c, ids, idAttribute);
+	}
+
+	public <T extends Basic> List<T> findByIds(Class<T> c, Set<String> requested) {
+		return repository.findByIds(c, requested);
+	}
+
+	public <T> T findByIdOrNull(Class<T> type, String id) {
+		return repository.findByIdOrNull(type, id);
+	}
+
+	@Transactional
+	public void merge(Object base) {
+		repository.merge(base);
+	}
+
+	@Transactional
+	public void massMerge(List<?> toMerge) {
+		repository.massMerge(toMerge);
+	}
+
+	public PaginationResponse<Supplier> listAllSuppliers(
+			SecurityContextBase securityContextBase, SupplierFiltering filtering) {
+
+		List<Supplier> endpoints = repository.getAllSuppliers(securityContextBase,
 				filtering);
-		long count = repository.countAllSuppliers(securityContext, filtering);
+		long count = repository.countAllSuppliers(securityContextBase, filtering);
 		return new PaginationResponse<>(endpoints, filtering, count);
 	}
 
-	@Override
-	public List<Supplier> getAllSuppliers(SecurityContext securityContext,
-			SupplierFiltering filtering) {
-		return repository.getAllSuppliers(securityContext, filtering);
+
+	public List<Supplier> getAllSuppliers(SecurityContextBase securityContextBase,
+										  SupplierFiltering filtering) {
+		return repository.getAllSuppliers(securityContextBase, filtering);
 	}
 
-	@Override
+
 	public Supplier createSupplierNoMerge(SupplierCreate creationContainer,
-			SecurityContext securityContext) {
-		Supplier supplier = new Supplier(creationContainer.getName(), securityContext);
+										  SecurityContextBase securityContextBase) {
+		Supplier supplier = new Supplier();
 		updateSupplierNoMerge(creationContainer, supplier);
+		BaseclassService.createSecurityObjectNoMerge(supplier, securityContextBase);
+
 		return supplier;
 
 	}
 
 	public Supplier updateSupplier(SupplierUpdate creationContainer,
-			SecurityContext securityContext) {
+								   SecurityContextBase securityContextBase) {
 		Supplier Supplier = creationContainer.getSupplier();
 		if (updateSupplierNoMerge(creationContainer, Supplier)) {
 			repository.merge(Supplier);
@@ -74,31 +115,13 @@ public class SupplierService implements ISupplierService {
 		return Supplier;
 	}
 
-	@Override
-	public void massMerge(List<?> toMerge) {
-		repository.massMerge(toMerge);
-	}
 
-	@Override
 	public boolean updateSupplierNoMerge(SupplierCreate create,
-			Supplier Supplier) {
-		boolean update = false;
-		if (create.getName() != null
-				&& !create.getName().equals(Supplier.getName())) {
-			Supplier.setName(create.getName());
-			update = true;
-		}
-		if (create.getDescription() != null
-				&& !create.getDescription().equals(Supplier.getDescription())) {
-			Supplier.setDescription(create.getDescription());
-			update = true;
-		}
+										 Supplier supplier) {
+		boolean update = organizationService.updateOrganizationNoMerge(supplier, create);
 
-		if (create.getSupplierApi() != null
-				&& !(Supplier.getSupplierApi() == null || create
-						.getSupplierApi().getId()
-						.equals(Supplier.getSupplierApi().getId()))) {
-			Supplier.setSupplierApi(create.getSupplierApi());
+		if (create.getSupplierApi() != null && !(supplier.getSupplierApi() == null || create.getSupplierApi().getId().equals(supplier.getSupplierApi().getId()))) {
+			supplier.setSupplierApi(create.getSupplierApi());
 			update = true;
 		}
 
@@ -106,72 +129,70 @@ public class SupplierService implements ISupplierService {
 	}
 
 	public void validateFiltering(SupplierFiltering filtering,
-			SecurityContext securityContext) {
+								  SecurityContextBase securityContextBase) {
+		organizationService.validateFiltering(filtering,securityContextBase);
 
 
 	}
 
 
 	public void validateCreate(SupplierCreate creationContainer,
-			SecurityContext securityContext) {
+							   SecurityContextBase securityContextBase) {
+		organizationService.validate(creationContainer,securityContextBase);
 		if (creationContainer.getName() == null
 				|| creationContainer.getName().isEmpty()) {
-			throw new BadRequestException(
+			throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
 					"Supplier name must be non empty and non null");
 		}
 		SupplierFiltering supplierFiltering = new SupplierFiltering();
-		supplierFiltering.setNameLike(creationContainer.getName());
-		List<Supplier> suppliers = getAllSuppliers(securityContext,
-				supplierFiltering);
+		supplierFiltering.setBasicPropertiesFilter(new BasicPropertiesFilter().setNameLike(creationContainer.getName()));
+		List<Supplier> suppliers = getAllSuppliers(securityContextBase, supplierFiltering);
 		if (!suppliers.isEmpty()) {
-			throw new BadRequestException("Supplier with name "
-					+ creationContainer.getName() + " already exists");
+			throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Supplier with name " + creationContainer.getName() + " already exists");
 		}
 		String supplierApiId = creationContainer.getSupplierApiId();
-		SupplierApi supplierApi = supplierApiId != null ? getByIdOrNull(
-				supplierApiId, SupplierApi.class, null, securityContext) : null;
+		SupplierApi supplierApi = supplierApiId != null ? getByIdOrNull(supplierApiId, SupplierApi.class, null, securityContextBase) : null;
 		if (supplierApi == null && supplierApiId != null) {
-			throw new BadRequestException("No Supplier api id " + supplierApiId);
+			throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "No Supplier api id " + supplierApiId);
 		}
 		creationContainer.setSupplierApi(supplierApi);
 
 	}
 
 	public void validateUpdate(SupplierUpdate creationContainer,
-			SecurityContext securityContext) {
+							   SecurityContextBase securityContextBase) {
 
 		if (creationContainer.getName() != null) {
 			SupplierFiltering supplierFiltering = new SupplierFiltering();
-			supplierFiltering.setNameLike(creationContainer.getName());
-			List<Supplier> suppliers = getAllSuppliers(securityContext,
+			supplierFiltering.setBasicPropertiesFilter(new BasicPropertiesFilter().setNameLike(creationContainer.getName()));
+			List<Supplier> suppliers = getAllSuppliers(securityContextBase,
 					supplierFiltering)
 					.parallelStream()
 					.filter(f -> !f.getId().equals(
 							creationContainer.getSupplier().getId()))
 					.collect(Collectors.toList());
 			if (!suppliers.isEmpty()) {
-				throw new BadRequestException("Supplier with name "
+				throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Supplier with name "
 						+ creationContainer.getName() + " already exists");
 			}
 		}
 		String supplierApiId = creationContainer.getSupplierApiId();
 		SupplierApi supplierApi = supplierApiId != null ? getByIdOrNull(
-				supplierApiId, SupplierApi.class, null, securityContext) : null;
+				supplierApiId, SupplierApi.class, null, securityContextBase) : null;
 		if (supplierApi == null && supplierApiId != null) {
-			throw new BadRequestException("No Supplier api id " + supplierApiId);
+			throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "No Supplier api id " + supplierApiId);
 		}
 		creationContainer.setSupplierApi(supplierApi);
 
 	}
 
 	public Supplier createSupplier(SupplierCreate creationContainer,
-								   SecurityContext securityContext) {
+								   SecurityContextBase securityContextBase) {
 		Supplier Supplier = createSupplierNoMerge(creationContainer,
-				securityContext);
+				securityContextBase);
 		repository.merge(Supplier);
 		return Supplier;
 	}
-
 
 
 }

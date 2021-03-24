@@ -1,47 +1,50 @@
 package com.flexicore.organization.service;
 
-import com.flexicore.annotations.plugins.PluginInfo;
-import com.flexicore.data.jsoncontainers.PaginationResponse;
-import com.flexicore.events.LoginEvent;
-import com.flexicore.interfaces.ServicePlugin;
+
 import com.flexicore.model.Baseclass;
+import com.flexicore.model.Basic;
 import com.flexicore.organization.data.CustomerRepository;
 import com.flexicore.organization.model.Customer;
 import com.flexicore.organization.request.CustomerCreate;
 import com.flexicore.organization.request.CustomerFiltering;
 import com.flexicore.organization.request.CustomerUpdate;
-import com.flexicore.security.SecurityContext;
-import com.flexicore.service.BaseclassNewService;
+import com.flexicore.security.SecurityContextBase;
+import com.wizzdi.flexicore.boot.base.interfaces.Plugin;
+import com.wizzdi.flexicore.security.response.PaginationResponse;
+import com.wizzdi.flexicore.security.service.BaseclassService;
+import com.wizzdi.flexicore.security.service.BasicService;
 import org.pf4j.Extension;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.annotation.Primary;
 import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Transactional;
 
+import javax.persistence.metamodel.SingularAttribute;
 import java.time.OffsetDateTime;
 import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-@PluginInfo(version = 1)
+
 @Extension
 @Component
-@Primary
-public class CustomerService implements ServicePlugin {
+
+public class CustomerService implements Plugin {
 
 	private static final Logger logger= LoggerFactory.getLogger(CustomerService.class);
 
-	@PluginInfo(version = 1)
+
 	@Autowired
 	private CustomerRepository repository;
 
 	@Autowired
-	private BaseclassNewService baseclassNewService;
+	private BasicService basicService;
 
-	@EventListener
+	//TODO:update customer last login...
+	/*@EventListener
 	public void onUserLoggedIn(LoginEvent loginEvent){
 		List<Customer> customers = listAllCustomers(null, new CustomerFiltering().setUsers(Collections.singletonList(loginEvent.getUser())));
 		for (Customer customer : customers) {
@@ -51,54 +54,82 @@ public class CustomerService implements ServicePlugin {
 		if(logger.isDebugEnabled()&&!customers.isEmpty()){
 			logger.debug("updated last used for customers: "+customers.stream().map(f->f.getName()+"("+f.getId()+")").collect(Collectors.joining(",")));
 		}
-	}
+	}*/
 
-
-	public <T extends Baseclass> T getByIdOrNull(String id, Class<T> c,
-			List<String> batch, SecurityContext securityContext) {
-		return repository.getByIdOrNull(id, c, batch, securityContext);
-	}
-
-	public <T extends Baseclass> List<T> listByIds(Class<T> c, Set<String> ids,
-			SecurityContext securityContext) {
+	public <T extends Baseclass> List<T> listByIds(Class<T> c, Set<String> ids, SecurityContextBase securityContext) {
 		return repository.listByIds(c, ids, securityContext);
 	}
 
+	public <T extends Baseclass> T getByIdOrNull(String id, Class<T> c, SecurityContextBase securityContext) {
+		return repository.getByIdOrNull(id, c, securityContext);
+	}
+
+	public <D extends Basic, E extends Baseclass, T extends D> T getByIdOrNull(String id, Class<T> c, SingularAttribute<D, E> baseclassAttribute, SecurityContextBase securityContext) {
+		return repository.getByIdOrNull(id, c, baseclassAttribute, securityContext);
+	}
+
+	public <D extends Basic, E extends Baseclass, T extends D> List<T> listByIds(Class<T> c, Set<String> ids, SingularAttribute<D, E> baseclassAttribute, SecurityContextBase securityContext) {
+		return repository.listByIds(c, ids, baseclassAttribute, securityContext);
+	}
+
+	public <D extends Basic, T extends D> List<T> findByIds(Class<T> c, Set<String> ids, SingularAttribute<D, String> idAttribute) {
+		return repository.findByIds(c, ids, idAttribute);
+	}
+
+	public <T extends Basic> List<T> findByIds(Class<T> c, Set<String> requested) {
+		return repository.findByIds(c, requested);
+	}
+
+	public <T> T findByIdOrNull(Class<T> type, String id) {
+		return repository.findByIdOrNull(type, id);
+	}
+
+	@Transactional
+	public void merge(Object base) {
+		repository.merge(base);
+	}
+
+	@Transactional
+	public void massMerge(List<?> toMerge) {
+		repository.massMerge(toMerge);
+	}
+
 	public void validateFiltering(CustomerFiltering filtering,
-			SecurityContext securityContext) {
-		baseclassNewService.validateFilter(filtering, securityContext);
+			SecurityContextBase securityContextBase) {
+		basicService.validate(filtering, securityContextBase);
 
 	}
 
 	public PaginationResponse<Customer> getAllCustomers(
-			SecurityContext securityContext, CustomerFiltering filtering) {
-		List<Customer> list = listAllCustomers(securityContext, filtering);
-		long count = repository.countAllCustomers(securityContext, filtering);
+			SecurityContextBase securityContextBase, CustomerFiltering filtering) {
+		List<Customer> list = listAllCustomers(securityContextBase, filtering);
+		long count = repository.countAllCustomers(securityContextBase, filtering);
 		return new PaginationResponse<>(list, filtering, count);
 	}
 
-	public List<Customer> listAllCustomers(SecurityContext securityContext, CustomerFiltering filtering) {
-		return repository.getAllCustomers(securityContext, filtering);
+	public List<Customer> listAllCustomers(SecurityContextBase securityContextBase, CustomerFiltering filtering) {
+		return repository.getAllCustomers(securityContextBase, filtering);
 	}
 
 	public Customer createCustomer(CustomerCreate creationContainer,
-			SecurityContext securityContext) {
-		Customer customer = createCustomerNoMerge(creationContainer, securityContext);
+			SecurityContextBase securityContextBase) {
+		Customer customer = createCustomerNoMerge(creationContainer, securityContextBase);
 		repository.merge(customer);
 		return customer;
 	}
 
 	public Customer createCustomerNoMerge(CustomerCreate creationContainer,
-			SecurityContext securityContext) {
-		Customer customer = new Customer(creationContainer.getName(),securityContext);
+			SecurityContextBase securityContextBase) {
+		Customer customer = new Customer();
 		updateCustomerNoMerge(customer, creationContainer);
+		Baseclass securityObjectNoMerge = BaseclassService.createSecurityObjectNoMerge(customer, securityContextBase);
+
 		return customer;
 	}
 
 	public boolean updateCustomerNoMerge(Customer customer,
 			CustomerCreate creationContainer) {
-		boolean update = baseclassNewService.updateBaseclassNoMerge(creationContainer,
-				customer);
+		boolean update = basicService.updateBasicNoMerge(creationContainer, customer);
 		if(creationContainer.getExternalId()!=null && !creationContainer.getExternalId().equals(customer.getExternalId())){
 			customer.setExternalId(creationContainer.getExternalId());
 			update=true;
@@ -108,7 +139,7 @@ public class CustomerService implements ServicePlugin {
 	}
 
 	public Customer updateCustomer(CustomerUpdate updateContainer,
-			SecurityContext securityContext) {
+			SecurityContextBase securityContextBase) {
 		Customer customer = updateContainer.getCustomer();
 		if (updateCustomerNoMerge(customer, updateContainer)) {
 			repository.merge(customer);
@@ -117,8 +148,8 @@ public class CustomerService implements ServicePlugin {
 	}
 
 	public void validate(CustomerCreate creationContainer,
-			SecurityContext securityContext) {
-		baseclassNewService.validate(creationContainer, securityContext);
+			SecurityContextBase securityContextBase) {
+		basicService.validate(creationContainer, securityContextBase);
 
 	}
 }

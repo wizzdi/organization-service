@@ -2,9 +2,10 @@ package com.flexicore.organization.request;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.flexicore.organization.model.Organization;
-import com.flexicore.request.BaseclassCreate;
+import com.wizzdi.flexicore.security.request.BasicCreate;
+import com.wizzdi.flexicore.security.request.BasicCreate;
 
-public class CustomerCreate extends BaseclassCreate {
+public class CustomerCreate extends BasicCreate {
 
     private String externalId;
 

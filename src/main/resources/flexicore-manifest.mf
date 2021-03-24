@@ -1,3 +1,0 @@
-uuid=${project.groupId}.${project.artifactId}
-version=${project.version}
-provides=com.flexicore.organization.interfaces.IOrganizationRepository,com.flexicore.organization.interfaces.IOrganizationService,com.flexicore.organization.interfaces.ISiteRepository,com.flexicore.organization.interfaces.ISiteService,com.flexicore.organization.interfaces.IEmployeeRepository,com.flexicore.organization.interfaces.IEmployeeService,com.flexicore.organization.interfaces.ISupplierService,com.flexicore.organization.interfaces.ISupplierApiService

@@ -2,9 +2,10 @@ package com.flexicore.organization.request;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.flexicore.model.territories.Address;
-import com.flexicore.request.BaseclassCreate;
+import com.wizzdi.flexicore.security.request.BasicCreate;
+import com.wizzdi.flexicore.security.request.BasicCreate;
 
-public class OrganizationCreate extends BaseclassCreate {
+public class OrganizationCreate extends BasicCreate {
 
 	private String mainAddressId;
 	@JsonIgnore

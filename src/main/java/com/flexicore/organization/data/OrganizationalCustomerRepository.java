@@ -1,63 +1,112 @@
 package com.flexicore.organization.data;
 
-import com.flexicore.annotations.plugins.PluginInfo;
-import com.flexicore.interfaces.AbstractRepositoryPlugin;
-import com.flexicore.model.QueryInformationHolder;
-import com.flexicore.model.Tenant;
+import com.flexicore.model.Baseclass;
+import com.flexicore.model.Basic;
 import com.flexicore.organization.model.Organization;
 import com.flexicore.organization.model.Organization_;
 import com.flexicore.organization.model.OrganizationalCustomer;
 import com.flexicore.organization.model.OrganizationalCustomer_;
 import com.flexicore.organization.request.OrganizationalCustomerFiltering;
-import com.flexicore.security.SecurityContext;
+import com.flexicore.security.SecurityContextBase;
+import com.wizzdi.flexicore.boot.base.interfaces.Plugin;
+import com.wizzdi.flexicore.security.data.BasicRepository;
 import org.pf4j.Extension;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Transactional;
 
+import javax.persistence.EntityManager;
+import javax.persistence.PersistenceContext;
+import javax.persistence.TypedQuery;
 import javax.persistence.criteria.*;
+import javax.persistence.metamodel.SingularAttribute;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-@PluginInfo(version = 1)
+
 @Extension
 @Component
-public class OrganizationalCustomerRepository extends AbstractRepositoryPlugin {
+public class OrganizationalCustomerRepository implements Plugin {
+	@PersistenceContext
+	private EntityManager em;
+	@Autowired
+	private CustomerRepository customerRepository;
 
-	public List<OrganizationalCustomer> getAllOrganizationalCustomers(SecurityContext securityContext,
-			OrganizationalCustomerFiltering filtering) {
-		CriteriaBuilder cb = em.getCriteriaBuilder();
-		CriteriaQuery<OrganizationalCustomer> q = cb.createQuery(OrganizationalCustomer.class);
-		Root<OrganizationalCustomer> r = q.from(OrganizationalCustomer.class);
-		List<Predicate> preds = new ArrayList<>();
-		addOrganizationalCustomerPredicates(filtering, cb, r, preds);
-		QueryInformationHolder<OrganizationalCustomer> queryInformationHolder = new QueryInformationHolder<>(
-				filtering, OrganizationalCustomer.class, securityContext);
-		return getAllFiltered(queryInformationHolder, preds, cb, q, r);
-	}
-
-	public long countAllOrganizationalCustomers(SecurityContext securityContext,
-			OrganizationalCustomerFiltering filtering) {
-		CriteriaBuilder cb = em.getCriteriaBuilder();
-		CriteriaQuery<Long> q = cb.createQuery(Long.class);
-		Root<OrganizationalCustomer> r = q.from(OrganizationalCustomer.class);
-		List<Predicate> preds = new ArrayList<>();
-		addOrganizationalCustomerPredicates(filtering, cb, r, preds);
-		QueryInformationHolder<OrganizationalCustomer> queryInformationHolder = new QueryInformationHolder<>(
-				filtering, OrganizationalCustomer.class, securityContext);
-		return countAllFiltered(queryInformationHolder, preds, cb, q, r);
-	}
-
-	public static <T extends OrganizationalCustomer> void addOrganizationalCustomerPredicates(OrganizationalCustomerFiltering filtering,
-			CriteriaBuilder cb, Root<T> r, List<Predicate> preds) {
-		CustomerRepository.addCustomerPredicates(filtering,cb,r,preds);
-		if(filtering.getOrganizations()!=null &&!filtering.getOrganizations().isEmpty()){
-			Set<String> ids=filtering.getOrganizations().stream().map(f->f.getId()).collect(Collectors.toSet());
-			Join<T, Organization> join= r.join(OrganizationalCustomer_.organization);
+	public <T extends OrganizationalCustomer> void addOrganizationalCustomerPredicates(OrganizationalCustomerFiltering filtering,
+																							  CriteriaBuilder cb,CommonAbstractCriteria q, From<?,T> r, List<Predicate> preds,SecurityContextBase securityContextBase) {
+		customerRepository.addCustomerPredicates(filtering, cb,q, r, preds,securityContextBase);
+		if (filtering.getOrganizations() != null && !filtering.getOrganizations().isEmpty()) {
+			Set<String> ids = filtering.getOrganizations().stream().map(f -> f.getId()).collect(Collectors.toSet());
+			Join<T, Organization> join = r.join(OrganizationalCustomer_.organization);
 			preds.add(join.get(Organization_.id).in(ids));
 		}
 
 
 	}
 
+	public List<OrganizationalCustomer> getAllOrganizationalCustomers(SecurityContextBase securityContextBase,
+																	  OrganizationalCustomerFiltering filtering) {
+		CriteriaBuilder cb = em.getCriteriaBuilder();
+		CriteriaQuery<OrganizationalCustomer> q = cb.createQuery(OrganizationalCustomer.class);
+		Root<OrganizationalCustomer> r = q.from(OrganizationalCustomer.class);
+		List<Predicate> preds = new ArrayList<>();
+		addOrganizationalCustomerPredicates(filtering, cb,q, r, preds,securityContextBase);
+		q.select(r).where(preds.toArray(Predicate[]::new));
+		TypedQuery<OrganizationalCustomer> query = em.createQuery(q);
+		BasicRepository.addPagination(filtering, query);
+		return query.getResultList();
+	}
+
+	public long countAllOrganizationalCustomers(SecurityContextBase securityContextBase,
+												OrganizationalCustomerFiltering filtering) {
+		CriteriaBuilder cb = em.getCriteriaBuilder();
+		CriteriaQuery<Long> q = cb.createQuery(Long.class);
+		Root<OrganizationalCustomer> r = q.from(OrganizationalCustomer.class);
+		List<Predicate> preds = new ArrayList<>();
+		addOrganizationalCustomerPredicates(filtering, cb,q, r, preds,securityContextBase);
+		q.select(cb.count(r)).where(preds.toArray(Predicate[]::new));
+		TypedQuery<Long> query = em.createQuery(q);
+		return query.getSingleResult();
+	}
+
+
+	public <T extends Baseclass> List<T> listByIds(Class<T> c, Set<String> ids, SecurityContextBase securityContext) {
+		return customerRepository.listByIds(c, ids, securityContext);
+	}
+
+	public <T extends Baseclass> T getByIdOrNull(String id, Class<T> c, SecurityContextBase securityContext) {
+		return customerRepository.getByIdOrNull(id, c, securityContext);
+	}
+
+	public <D extends Basic, E extends Baseclass, T extends D> T getByIdOrNull(String id, Class<T> c, SingularAttribute<D, E> baseclassAttribute, SecurityContextBase securityContext) {
+		return customerRepository.getByIdOrNull(id, c, baseclassAttribute, securityContext);
+	}
+
+	public <D extends Basic, E extends Baseclass, T extends D> List<T> listByIds(Class<T> c, Set<String> ids, SingularAttribute<D, E> baseclassAttribute, SecurityContextBase securityContext) {
+		return customerRepository.listByIds(c, ids, baseclassAttribute, securityContext);
+	}
+
+	public <D extends Basic, T extends D> List<T> findByIds(Class<T> c, Set<String> ids, SingularAttribute<D, String> idAttribute) {
+		return customerRepository.findByIds(c, ids, idAttribute);
+	}
+
+	public <T extends Basic> List<T> findByIds(Class<T> c, Set<String> requested) {
+		return customerRepository.findByIds(c, requested);
+	}
+
+	public <T> T findByIdOrNull(Class<T> type, String id) {
+		return customerRepository.findByIdOrNull(type, id);
+	}
+
+	@Transactional
+	public void merge(Object base) {
+		customerRepository.merge(base);
+	}
+
+	@Transactional
+	public void massMerge(List<?> toMerge) {
+		customerRepository.massMerge(toMerge);
+	}
 }

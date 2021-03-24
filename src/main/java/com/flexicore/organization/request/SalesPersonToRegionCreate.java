@@ -3,10 +3,11 @@ package com.flexicore.organization.request;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.flexicore.organization.model.SalesPerson;
 import com.flexicore.organization.model.SalesRegion;
+import com.wizzdi.flexicore.security.request.BasicCreate;
 
-import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
 
-public class SalesPersonToRegionCreate {
+public class SalesPersonToRegionCreate extends BasicCreate {
 
 	private String salesPersonId;
 	@JsonIgnore
@@ -14,8 +15,8 @@ public class SalesPersonToRegionCreate {
 	private String salesRegionId;
 	@JsonIgnore
 	private SalesRegion salesRegion;
-	private LocalDateTime startTime;
-	private LocalDateTime endTime;
+	private OffsetDateTime startTime;
+	private OffsetDateTime endTime;
 
 	public String getSalesPersonId() {
 		return salesPersonId;
@@ -55,20 +56,20 @@ public class SalesPersonToRegionCreate {
 		return this;
 	}
 
-	public LocalDateTime getStartTime() {
+	public OffsetDateTime getStartTime() {
 		return startTime;
 	}
 
-	public SalesPersonToRegionCreate setStartTime(LocalDateTime startTime) {
+	public SalesPersonToRegionCreate setStartTime(OffsetDateTime startTime) {
 		this.startTime = startTime;
 		return this;
 	}
 
-	public LocalDateTime getEndTime() {
+	public OffsetDateTime getEndTime() {
 		return endTime;
 	}
 
-	public SalesPersonToRegionCreate setEndTime(LocalDateTime endTime) {
+	public SalesPersonToRegionCreate setEndTime(OffsetDateTime endTime) {
 		this.endTime = endTime;
 		return this;
 	}

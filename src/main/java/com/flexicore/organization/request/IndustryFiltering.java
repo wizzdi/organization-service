@@ -1,19 +1,30 @@
 package com.flexicore.organization.request;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.flexicore.model.FilteringInformationHolder;
+import com.wizzdi.flexicore.security.request.BasicPropertiesFilter;
+import com.wizzdi.flexicore.security.request.PaginationFilter;
 import com.flexicore.organization.model.Customer;
 
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-public class IndustryFiltering extends FilteringInformationHolder {
+public class IndustryFiltering extends PaginationFilter {
+
+	private BasicPropertiesFilter basicPropertiesFilter;
 
     private Set<String> customerIds=new HashSet<>();
     @JsonIgnore
     private List<Customer> customers;
 
+    public BasicPropertiesFilter getBasicPropertiesFilter() {
+        return basicPropertiesFilter;
+    }
+
+    public <T extends IndustryFiltering> T setBasicPropertiesFilter(BasicPropertiesFilter basicPropertiesFilter) {
+        this.basicPropertiesFilter = basicPropertiesFilter;
+        return (T) this;
+    }
 
     public Set<String> getCustomerIds() {
         return customerIds;

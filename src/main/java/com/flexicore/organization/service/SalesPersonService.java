@@ -1,96 +1,116 @@
 package com.flexicore.organization.service;
 
-import com.flexicore.annotations.plugins.PluginInfo;
-import com.flexicore.data.jsoncontainers.PaginationResponse;
-import com.flexicore.interfaces.ServicePlugin;
+
 import com.flexicore.model.Baseclass;
-import com.flexicore.model.TenantToUser;
+import com.flexicore.model.Basic;
 import com.flexicore.organization.data.SalesPersonRepository;
 import com.flexicore.organization.model.SalesPerson;
-import com.flexicore.organization.model.SalesPersonToRegion;
+import com.flexicore.organization.model.SalesPerson_;
 import com.flexicore.organization.model.SalesRegion;
 import com.flexicore.organization.request.SalesPersonCreate;
 import com.flexicore.organization.request.SalesPersonFiltering;
-import com.flexicore.organization.request.SalesPersonToRegionCreate;
 import com.flexicore.organization.request.SalesPersonUpdate;
-import com.flexicore.request.TenantToUserCreate;
-import com.flexicore.security.SecurityContext;
-import com.flexicore.service.UserService;
-
-import javax.ws.rs.BadRequestException;
-import java.time.LocalDateTime;
-import java.util.*;
-import java.util.logging.Logger;
-import java.util.stream.Collectors;
+import com.flexicore.security.SecurityContextBase;
+import com.wizzdi.flexicore.boot.base.interfaces.Plugin;
+import com.wizzdi.flexicore.security.response.PaginationResponse;
+import com.wizzdi.flexicore.security.service.BaseclassService;
 import org.pf4j.Extension;
-import org.springframework.context.annotation.Primary;
-import org.springframework.stereotype.Component;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.server.ResponseStatusException;
 
-@PluginInfo(version = 1)
+import javax.persistence.metamodel.SingularAttribute;
+import java.util.*;
+import java.util.stream.Collectors;
+
+
 @Extension
 @Component
-@Primary
-public class SalesPersonService implements ServicePlugin {
 
-	@PluginInfo(version = 1)
+public class SalesPersonService implements Plugin {
+
+
 	@Autowired
 	private SalesPersonRepository repository;
-	@Autowired
-	private Logger logger;
 
-	@PluginInfo(version = 1)
+
 	@Autowired
 	private EmployeeService employeeService;
 
-	@Autowired
-	private UserService userService;
 
-	public <T extends Baseclass> T getByIdOrNull(String id, Class<T> c,
-			List<String> batch, SecurityContext securityContext) {
-		return repository.getByIdOrNull(id, c, batch, securityContext);
-	}
 
-	public <T extends Baseclass> List<T> listByIds(Class<T> c, Set<String> ids,
-			SecurityContext securityContext) {
+
+	public <T extends Baseclass> List<T> listByIds(Class<T> c, Set<String> ids, SecurityContextBase securityContext) {
 		return repository.listByIds(c, ids, securityContext);
 	}
 
+	public <T extends Baseclass> T getByIdOrNull(String id, Class<T> c, SecurityContextBase securityContext) {
+		return repository.getByIdOrNull(id, c, securityContext);
+	}
+
+	public <D extends Basic, E extends Baseclass, T extends D> T getByIdOrNull(String id, Class<T> c, SingularAttribute<D, E> baseclassAttribute, SecurityContextBase securityContext) {
+		return repository.getByIdOrNull(id, c, baseclassAttribute, securityContext);
+	}
+
+	public <D extends Basic, E extends Baseclass, T extends D> List<T> listByIds(Class<T> c, Set<String> ids, SingularAttribute<D, E> baseclassAttribute, SecurityContextBase securityContext) {
+		return repository.listByIds(c, ids, baseclassAttribute, securityContext);
+	}
+
+	public <D extends Basic, T extends D> List<T> findByIds(Class<T> c, Set<String> ids, SingularAttribute<D, String> idAttribute) {
+		return repository.findByIds(c, ids, idAttribute);
+	}
+
+	public <T extends Basic> List<T> findByIds(Class<T> c, Set<String> requested) {
+		return repository.findByIds(c, requested);
+	}
+
+	public <T> T findByIdOrNull(Class<T> type, String id) {
+		return repository.findByIdOrNull(type, id);
+	}
+
+	@Transactional
+	public void merge(Object base) {
+		repository.merge(base);
+	}
+
+	@Transactional
+	public void massMerge(List<?> toMerge) {
+		repository.massMerge(toMerge);
+	}
+
 	public PaginationResponse<SalesPerson> listAllSalesPersons(
-			SecurityContext securityContext, SalesPersonFiltering filtering) {
+			SecurityContextBase securityContextBase, SalesPersonFiltering filtering) {
 
 		List<SalesPerson> endpoints = repository.listAllSalesPersons(
-				securityContext, filtering);
+				securityContextBase, filtering);
 		long count = repository
-				.countAllSalesPersons(securityContext, filtering);
+				.countAllSalesPersons(securityContextBase, filtering);
 		return new PaginationResponse<>(endpoints, filtering, count);
 	}
 
 	public SalesPerson createSalesPerson(SalesPersonCreate creationContainer,
-			SecurityContext securityContext) {
+			SecurityContextBase securityContextBase) {
 
-		SalesPerson salesPerson = createSalesPersonNoMerge(creationContainer,
-				securityContext);
-		TenantToUser tenantToUser = userService.createTenantToUserNoMerge(
-				new TenantToUserCreate()
-						.setUser(salesPerson)
-						.setDefaultTenant(true)
-						.setTenant(creationContainer.getTenant()),
-				securityContext);
-		repository.massMerge(Arrays.asList(salesPerson, tenantToUser));
+		SalesPerson salesPerson = createSalesPersonNoMerge(creationContainer, securityContextBase);
+
+		repository.merge(salesPerson);
 		return salesPerson;
 	}
 
 	public SalesPerson createSalesPersonNoMerge(
-			SalesPersonCreate creationContainer, SecurityContext securityContext) {
-		SalesPerson salesPerson = new SalesPerson(creationContainer.getName(), securityContext);
+			SalesPersonCreate creationContainer, SecurityContextBase securityContextBase) {
+		SalesPerson salesPerson = new SalesPerson();
 		updateSalesPersonNoMerge(salesPerson, creationContainer);
+		BaseclassService.createSecurityObjectNoMerge(salesPerson, securityContextBase);
+
 		return salesPerson;
 
 	}
 
 	public SalesPerson updateSalesPerson(SalesPersonUpdate creationContainer,
-			SecurityContext securityContext) {
+			SecurityContextBase securityContextBase) {
 		SalesPerson salesPerson = creationContainer.getSalesPerson();
 		if (updateSalesPersonNoMerge(salesPerson, creationContainer)) {
 			repository.merge(salesPerson);
@@ -100,89 +120,21 @@ public class SalesPersonService implements ServicePlugin {
 
 	public boolean updateSalesPersonNoMerge(SalesPerson salesPerson,
 			SalesPersonCreate salesPersonCreate) {
-		boolean update = employeeService.updateEmployeeNoMerge(salesPerson,
-				salesPersonCreate);
-		return update;
+		return employeeService.updateEmployeeNoMerge(salesPerson, salesPersonCreate);
 	}
 
 	public void validateFiltering(SalesPersonFiltering filtering,
-			SecurityContext securityContext) {
+			SecurityContextBase securityContextBase) {
+		employeeService.validateFiltering(filtering,securityContextBase);
 		Set<String> regionIds = filtering.getRegionIds();
-		Map<String, SalesRegion> salesRegion = regionIds.isEmpty()
-				? new HashMap<>()
-				: listByIds(SalesRegion.class, regionIds, securityContext)
-						.parallelStream().collect(
-								Collectors.toMap(f -> f.getId(), f -> f));
+		Map<String, SalesRegion> salesRegion = regionIds.isEmpty() ? new HashMap<>() : listByIds(SalesRegion.class, regionIds, SalesPerson_.security, securityContextBase).parallelStream().collect(Collectors.toMap(f -> f.getId(), f -> f));
 		regionIds.removeAll(salesRegion.keySet());
 		if (!salesRegion.isEmpty()) {
-			throw new BadRequestException("No Sales Region with ids "
-					+ regionIds);
+			throw new ResponseStatusException(HttpStatus.BAD_REQUEST,"No Sales Region with ids " + regionIds);
 		}
 		filtering.setSalesRegions(new ArrayList<>(salesRegion.values()));
 	}
 
-	public void validate(SalesPersonToRegionCreate creationContainer,
-			SecurityContext securityContext) {
-		String salesPersonId = creationContainer.getSalesPersonId();
-		SalesPerson salesPerson = salesPersonId == null ? null : getByIdOrNull(
-				salesPersonId, SalesPerson.class, null, securityContext);
-		if (salesPerson == null && salesPersonId != null) {
-			throw new BadRequestException("No SalesPerson with id "
-					+ salesPersonId);
-		}
-		creationContainer.setSalesPerson(salesPerson);
 
-		String salesRegionId = creationContainer.getSalesRegionId();
-		SalesRegion salesRegion = salesRegionId == null ? null : getByIdOrNull(
-				salesRegionId, SalesRegion.class, null, securityContext);
-		if (salesRegion == null && salesRegionId != null) {
-			throw new BadRequestException("No SalesRegion with id "
-					+ salesRegionId);
-		}
-		creationContainer.setSalesRegion(salesRegion);
-	}
-
-	public SalesPersonToRegion createSalesPersonToRegion(
-			SalesPersonToRegionCreate creationContainer,
-			SecurityContext securityContext) {
-		SalesPersonToRegion salesPersonToRegion = createSalesPersonToRegionNoMerge(
-				creationContainer, securityContext);
-		if (creationContainer.getStartTime() == null) {
-			creationContainer.setStartTime(LocalDateTime.now());
-		}
-		repository.merge(salesPersonToRegion);
-		return salesPersonToRegion;
-	}
-
-	private SalesPersonToRegion createSalesPersonToRegionNoMerge(
-			SalesPersonToRegionCreate creationContainer,
-			SecurityContext securityContext) {
-		SalesPersonToRegion salesPersonToRegion = new SalesPersonToRegion("link", securityContext);
-		salesPersonToRegion.setLeftside(creationContainer.getSalesPerson());
-		salesPersonToRegion.setRightside(creationContainer.getSalesRegion());
-		updateSalesPersonToRegionNoMerge(creationContainer, salesPersonToRegion);
-		return salesPersonToRegion;
-	}
-
-	private boolean updateSalesPersonToRegionNoMerge(
-			SalesPersonToRegionCreate creationContainer,
-			SalesPersonToRegion salesPersonToRegion) {
-		boolean update = false;
-		if (creationContainer.getStartTime() != null
-				&& !creationContainer.getStartTime().equals(
-						salesPersonToRegion.getStartTime())) {
-			creationContainer.setStartTime(creationContainer.getStartTime());
-			update = true;
-		}
-
-		if (creationContainer.getEndTime() != null
-				&& !creationContainer.getEndTime().equals(
-						salesPersonToRegion.getEndTime())) {
-			creationContainer.setEndTime(creationContainer.getEndTime());
-			update = true;
-		}
-
-		return update;
-	}
 
 }
