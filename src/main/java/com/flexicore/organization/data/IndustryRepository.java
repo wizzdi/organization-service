@@ -32,33 +32,33 @@ public class IndustryRepository implements Plugin {
 	@Autowired
 	private SecuredBasicRepository securedBasicRepository;
 
-	public List<Industry> getAllIndustries(SecurityContextBase securityContextBase,
+	public List<Industry> getAllIndustries(SecurityContextBase securityContext,
 										   IndustryFiltering filtering) {
 		CriteriaBuilder cb = em.getCriteriaBuilder();
 		CriteriaQuery<Industry> q = cb.createQuery(Industry.class);
 		Root<Industry> r = q.from(Industry.class);
 		List<Predicate> preds = new ArrayList<>();
-		addIndustryPredicates(filtering, cb,q, r, preds,securityContextBase);
+		addIndustryPredicates(filtering, cb,q, r, preds,securityContext);
 		q.select(r).where(preds.toArray(Predicate[]::new));
 		TypedQuery<Industry> query = em.createQuery(q);
 		BasicRepository.addPagination(filtering, query);
 		return query.getResultList();
 	}
 
-	public long countAllIndustries(SecurityContextBase securityContextBase,
+	public long countAllIndustries(SecurityContextBase securityContext,
 								   IndustryFiltering filtering) {
 		CriteriaBuilder cb = em.getCriteriaBuilder();
 		CriteriaQuery<Long> q = cb.createQuery(Long.class);
 		Root<Industry> r = q.from(Industry.class);
 		List<Predicate> preds = new ArrayList<>();
-		addIndustryPredicates(filtering, cb,q, r, preds,securityContextBase);
+		addIndustryPredicates(filtering, cb,q, r, preds,securityContext);
 		q.select(cb.count(r)).where(preds.toArray(Predicate[]::new));
 		TypedQuery<Long> query = em.createQuery(q);
 		return query.getSingleResult();
 	}
 
-	private <T extends Industry > void addIndustryPredicates(IndustryFiltering filtering, CriteriaBuilder cb,CommonAbstractCriteria q, From<?,T> r, List<Predicate> preds,SecurityContextBase securityContextBase) {
-		securedBasicRepository.addSecuredBasicPredicates(filtering.getBasicPropertiesFilter(),cb,q,r,preds,securityContextBase);
+	private <T extends Industry > void addIndustryPredicates(IndustryFiltering filtering, CriteriaBuilder cb,CommonAbstractCriteria q, From<?,T> r, List<Predicate> preds,SecurityContextBase securityContext) {
+		securedBasicRepository.addSecuredBasicPredicates(filtering.getBasicPropertiesFilter(),cb,q,r,preds,securityContext);
 		if (filtering.getCustomers() != null && !filtering.getCustomers().isEmpty()) {
 			Set<String> ids = filtering.getCustomers().parallelStream().map(f -> f.getId()).collect(Collectors.toSet());
 			Join<T, IndustryToCustomer> industryIndustryToCustomerJoin = r.join(Industry_.industryToCustomers);

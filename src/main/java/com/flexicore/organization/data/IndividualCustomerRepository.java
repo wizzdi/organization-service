@@ -32,31 +32,31 @@ public class IndividualCustomerRepository implements Plugin {
 	private CustomerRepository customerRepository;
 
 	public <T extends IndividualCustomer> void addIndividualCustomerPredicates(IndividualCustomerFiltering filtering,
-																					  CriteriaBuilder cb, CommonAbstractCriteria q, From<?,T> r, List<Predicate> preds,SecurityContextBase securityContextBase) {
-		customerRepository.addCustomerPredicates(filtering, cb,q, r, preds,securityContextBase);
+																					  CriteriaBuilder cb, CommonAbstractCriteria q, From<?,T> r, List<Predicate> preds,SecurityContextBase securityContext) {
+		customerRepository.addCustomerPredicates(filtering, cb,q, r, preds,securityContext);
 
 	}
 
-	public List<IndividualCustomer> getAllIndividualCustomers(SecurityContextBase securityContextBase,
+	public List<IndividualCustomer> getAllIndividualCustomers(SecurityContextBase securityContext,
 															  IndividualCustomerFiltering filtering) {
 		CriteriaBuilder cb = em.getCriteriaBuilder();
 		CriteriaQuery<IndividualCustomer> q = cb.createQuery(IndividualCustomer.class);
 		Root<IndividualCustomer> r = q.from(IndividualCustomer.class);
 		List<Predicate> preds = new ArrayList<>();
-		addIndividualCustomerPredicates(filtering, cb,q, r, preds,securityContextBase);
+		addIndividualCustomerPredicates(filtering, cb,q, r, preds,securityContext);
 		q.select(r).where(preds.toArray(Predicate[]::new));
 		TypedQuery<IndividualCustomer> query = em.createQuery(q);
 		BasicRepository.addPagination(filtering, query);
 		return query.getResultList();
 	}
 
-	public long countAllIndividualCustomers(SecurityContextBase securityContextBase,
+	public long countAllIndividualCustomers(SecurityContextBase securityContext,
 											IndividualCustomerFiltering filtering) {
 		CriteriaBuilder cb = em.getCriteriaBuilder();
 		CriteriaQuery<Long> q = cb.createQuery(Long.class);
 		Root<IndividualCustomer> r = q.from(IndividualCustomer.class);
 		List<Predicate> preds = new ArrayList<>();
-		addIndividualCustomerPredicates(filtering, cb,q, r, preds,securityContextBase);
+		addIndividualCustomerPredicates(filtering, cb,q, r, preds,securityContext);
 		q.select(cb.count(r)).where(preds.toArray(Predicate[]::new));
 		TypedQuery<Long> query = em.createQuery(q);
 		return query.getSingleResult();

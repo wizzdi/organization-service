@@ -34,8 +34,8 @@ public class CustomerRepository implements Plugin {
 	private SecuredBasicRepository securedBasicRepository;
 
 	public <T extends Customer> void addCustomerPredicates(CustomerFiltering filtering,
-														   CriteriaBuilder cb,CommonAbstractCriteria q, From<?,T> r, List<Predicate> preds,SecurityContextBase securityContextBase) {
-		securedBasicRepository.addSecuredBasicPredicates(filtering.getBasicPropertiesFilter(), cb,q,r,preds,securityContextBase);
+														   CriteriaBuilder cb,CommonAbstractCriteria q, From<?,T> r, List<Predicate> preds,SecurityContextBase securityContext) {
+		securedBasicRepository.addSecuredBasicPredicates(filtering.getBasicPropertiesFilter(), cb,q,r,preds,securityContext);
 		if (filtering.getExternalIds() != null && !filtering.getExternalIds().isEmpty()) {
 			preds.add(r.get(Customer_.externalId).in(filtering.getExternalIds()));
 		}
@@ -50,26 +50,26 @@ public class CustomerRepository implements Plugin {
 
 	}
 
-	public List<Customer> getAllCustomers(SecurityContextBase securityContextBase,
+	public List<Customer> getAllCustomers(SecurityContextBase securityContext,
 										  CustomerFiltering filtering) {
 		CriteriaBuilder cb = em.getCriteriaBuilder();
 		CriteriaQuery<Customer> q = cb.createQuery(Customer.class);
 		Root<Customer> r = q.from(Customer.class);
 		List<Predicate> preds = new ArrayList<>();
-		addCustomerPredicates(filtering, cb,q, r, preds,securityContextBase);
+		addCustomerPredicates(filtering, cb,q, r, preds,securityContext);
 		q.select(r).where(preds.toArray(Predicate[]::new));
 		TypedQuery<Customer> query = em.createQuery(q);
 		BasicRepository.addPagination(filtering, query);
 		return query.getResultList();
 	}
 
-	public long countAllCustomers(SecurityContextBase securityContextBase,
+	public long countAllCustomers(SecurityContextBase securityContext,
 								  CustomerFiltering filtering) {
 		CriteriaBuilder cb = em.getCriteriaBuilder();
 		CriteriaQuery<Long> q = cb.createQuery(Long.class);
 		Root<Customer> r = q.from(Customer.class);
 		List<Predicate> preds = new ArrayList<>();
-		addCustomerPredicates(filtering, cb,q, r, preds,securityContextBase);
+		addCustomerPredicates(filtering, cb,q, r, preds,securityContext);
 		q.select(cb.count(r)).where(preds.toArray(Predicate[]::new));
 		TypedQuery<Long> query = em.createQuery(q);
 		return query.getSingleResult();

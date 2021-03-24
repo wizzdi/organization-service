@@ -3,6 +3,7 @@ package com.flexicore.organization.rest;
 import com.flexicore.annotations.IOperation;
 import com.flexicore.annotations.OperationsInside;
 
+import com.flexicore.organization.model.SalesRegion_;
 import com.wizzdi.flexicore.security.response.PaginationResponse;
 
 
@@ -20,19 +21,16 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 
 import org.pf4j.Extension;
 import org.springframework.http.HttpStatus;
-import org.springframework.stereotype.Component;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
 
 
 @OperationsInside
-
-
-@RequestMapping("plugins/SalesRegion")
+@RequestMapping("/plugins/SalesRegion")
 @Tag(name = "SalesRegion")
 @Extension
-@Component
+@RestController
 public class SalesRegionController implements Plugin {
 
 
@@ -40,15 +38,15 @@ public class SalesRegionController implements Plugin {
 	private SalesRegionService service;
 
 
-	@Operation(summary = "listAllSalesRegions", description = "Lists all SalesRegions")
-	@IOperation(Name = "listAllSalesRegions", Description = "Lists all SalesRegions")
-	@PostMapping("listAllSalesRegions")
-	public PaginationResponse<SalesRegion> listAllSalesRegions(
+	@Operation(summary = "getAllSalesRegions", description = "Lists all SalesRegions")
+	@IOperation(Name = "getAllSalesRegions", Description = "Lists all SalesRegions")
+	@PostMapping("/getAllSalesRegions")
+	public PaginationResponse<SalesRegion> getAllSalesRegions(
 
 			@RequestBody SalesRegionFiltering filtering,
-			@RequestAttribute SecurityContextBase securityContextBase) {
-		service.validateFiltering(filtering, securityContextBase);
-		return service.listAllSalesRegions(securityContextBase, filtering);
+			@RequestAttribute SecurityContextBase securityContext) {
+		service.validateFiltering(filtering, securityContext);
+		return service.getAllSalesRegions(securityContext, filtering);
 	}
 
 
@@ -58,9 +56,9 @@ public class SalesRegionController implements Plugin {
 	public SalesRegion createSalesRegion(
 
 			@RequestBody SalesRegionCreate creationContainer,
-			@RequestAttribute SecurityContextBase securityContextBase) {
+			@RequestAttribute SecurityContextBase securityContext) {
 
-		return service.createSalesRegion(creationContainer, securityContextBase);
+		return service.createSalesRegion(creationContainer, securityContext);
 	}
 
 
@@ -70,17 +68,17 @@ public class SalesRegionController implements Plugin {
 	public SalesRegion updateSalesRegion(
 
 			@RequestBody SalesRegionUpdate updateContainer,
-			@RequestAttribute SecurityContextBase securityContextBase) {
+			@RequestAttribute SecurityContextBase securityContext) {
 		SalesRegion salesRegion = service.getByIdOrNull(
-				updateContainer.getId(), SalesRegion.class, null,
-				securityContextBase);
+				updateContainer.getId(), SalesRegion.class, SalesRegion_.security,
+				securityContext);
 		if (salesRegion == null) {
 			throw new ResponseStatusException(HttpStatus.BAD_REQUEST,"no SalesRegion with id "
 					+ updateContainer.getId());
 		}
 		updateContainer.setSalesRegion(salesRegion);
 
-		return service.updateSalesRegion(updateContainer, securityContextBase);
+		return service.updateSalesRegion(updateContainer, securityContext);
 	}
 
 }

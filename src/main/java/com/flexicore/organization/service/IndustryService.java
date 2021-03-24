@@ -81,34 +81,35 @@ public class IndustryService implements Plugin {
 	}
 
 	public void validateFiltering(IndustryFiltering filtering,
-			SecurityContextBase securityContextBase) {
-		basicService.validate(filtering, securityContextBase);
+			SecurityContextBase securityContext) {
+		basicService.validate(filtering, securityContext);
 		Set<String> customerIds = filtering.getCustomerIds();
-		Map<String, Customer> customers = customerIds.isEmpty() ? new HashMap<>() : listByIds(Customer.class, customerIds, Customer_.security, securityContextBase).parallelStream().collect(Collectors.toMap(f -> f.getId(), f -> f));
+		Map<String, Customer> customers = customerIds.isEmpty() ? new HashMap<>() : listByIds(Customer.class, customerIds, Customer_.security, securityContext).parallelStream().collect(Collectors.toMap(f -> f.getId(), f -> f));
 		customerIds.removeAll(customers.keySet());
 		if (!customerIds.isEmpty()) { throw new ResponseStatusException(HttpStatus.BAD_REQUEST,"No Organization with ids " + customerIds);
 		}
 		filtering.setCustomers(new ArrayList<>(customers.values()));
 	}
 
-	public PaginationResponse<Industry> getAllIndustries(SecurityContextBase securityContextBase, IndustryFiltering filtering) {
-		List<Industry> list = repository.getAllIndustries(securityContextBase, filtering);
-		long count = repository.countAllIndustries(securityContextBase, filtering);
+	public PaginationResponse<Industry> getAllIndustries(SecurityContextBase securityContext, IndustryFiltering filtering) {
+		List<Industry> list = repository.getAllIndustries(securityContext, filtering);
+		long count = repository.countAllIndustries(securityContext, filtering);
 		return new PaginationResponse<>(list, filtering, count);
 	}
 
 	public Industry createIndustry(IndustryCreate creationContainer,
-			SecurityContextBase securityContextBase) {
-		Industry industry = createIndustryNoMerge(creationContainer, securityContextBase);
+			SecurityContextBase securityContext) {
+		Industry industry = createIndustryNoMerge(creationContainer, securityContext);
 		repository.merge(industry);
 		return industry;
 	}
 
 	private Industry createIndustryNoMerge(IndustryCreate creationContainer,
-			SecurityContextBase securityContextBase) {
+			SecurityContextBase securityContext) {
 		Industry industry = new Industry();
+		industry.setId(Baseclass.getBase64ID());
 		updateIndustryNoMerge(industry, creationContainer);
-		BaseclassService.createSecurityObjectNoMerge(industry, securityContextBase);
+		BaseclassService.createSecurityObjectNoMerge(industry, securityContext);
 
 		return industry;
 	}
@@ -121,7 +122,7 @@ public class IndustryService implements Plugin {
 	}
 
 	public Industry updateIndustry(IndustryUpdate updateContainer,
-			SecurityContextBase securityContextBase) {
+			SecurityContextBase securityContext) {
 		Industry industry = updateContainer.getIndustry();
 		if (updateIndustryNoMerge(industry, updateContainer)) {
 			repository.merge(industry);
@@ -130,7 +131,7 @@ public class IndustryService implements Plugin {
 	}
 
 	public void validate(IndustryCreate creationContainer,
-			SecurityContextBase securityContextBase) {
-		basicService.validate(creationContainer, securityContextBase);
+			SecurityContextBase securityContext) {
+		basicService.validate(creationContainer, securityContext);
 	}
 }

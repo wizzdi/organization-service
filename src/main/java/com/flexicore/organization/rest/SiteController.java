@@ -3,6 +3,7 @@ package com.flexicore.organization.rest;
 import com.flexicore.annotations.IOperation;
 import com.flexicore.annotations.OperationsInside;
 
+import com.flexicore.organization.model.Site_;
 import com.wizzdi.flexicore.security.response.PaginationResponse;
 
 
@@ -26,12 +27,10 @@ import org.springframework.web.server.ResponseStatusException;
 
 
 @OperationsInside
-
-
-@RequestMapping("plugins/Site")
+@RequestMapping("/plugins/Site")
 @Tag(name = "Site")
 @Extension
-@Component
+@RestController
 public class SiteController implements Plugin {
 
 
@@ -41,12 +40,12 @@ public class SiteController implements Plugin {
 
 	@Operation(summary = "getAllSites", description = "Lists all Sites")
 	@IOperation(Name = "getAllSites", Description = "Lists all Sites")
-	@PostMapping("getAllSites")
+	@PostMapping("/getAllSites")
 	public PaginationResponse<Site> getAllSites(
 
-			@RequestBody SiteFiltering filtering, @RequestAttribute SecurityContextBase securityContextBase) {
-		service.validateFiltering(filtering, securityContextBase);
-		return service.getAllSites(securityContextBase, filtering);
+			@RequestBody SiteFiltering filtering, @RequestAttribute SecurityContextBase securityContext) {
+		service.validateFiltering(filtering, securityContext);
+		return service.getAllSites(securityContext, filtering);
 	}
 
 
@@ -56,10 +55,10 @@ public class SiteController implements Plugin {
 	public Site createSite(
 
 			@RequestBody SiteCreate creationContainer,
-			@RequestAttribute SecurityContextBase securityContextBase) {
-		service.validate(creationContainer, securityContextBase);
+			@RequestAttribute SecurityContextBase securityContext) {
+		service.validate(creationContainer, securityContext);
 
-		return service.createSite(creationContainer, securityContextBase);
+		return service.createSite(creationContainer, securityContext);
 	}
 
 
@@ -68,16 +67,15 @@ public class SiteController implements Plugin {
 	@IOperation(Name = "updateSite", Description = "Updates Site")
 	public Site updateSite(
 
-			@RequestBody SiteUpdate updateContainer, @RequestAttribute SecurityContextBase securityContextBase) {
-		service.validate(updateContainer, securityContextBase);
-		Site site = service.getByIdOrNull(updateContainer.getId(), Site.class,
-				null, securityContextBase);
+			@RequestBody SiteUpdate updateContainer, @RequestAttribute SecurityContextBase securityContext) {
+		service.validate(updateContainer, securityContext);
+		Site site = service.getByIdOrNull(updateContainer.getId(), Site.class, Site_.security, securityContext);
 		if (site == null) {
 			throw new ResponseStatusException(HttpStatus.BAD_REQUEST,"no Site with id "
 					+ updateContainer.getId());
 		}
 		updateContainer.setSite(site);
 
-		return service.updateSite(updateContainer, securityContextBase);
+		return service.updateSite(updateContainer, securityContext);
 	}
 }

@@ -32,13 +32,13 @@ public class SalesPersonRepository implements Plugin {
 	@Autowired
 	private EmployeeRepository employeeRepository;
 
-	public List<SalesPerson> listAllSalesPersons(
-			SecurityContextBase securityContextBase, SalesPersonFiltering filtering) {
+	public List<SalesPerson> listAllSalesPeople(
+			SecurityContextBase securityContext, SalesPersonFiltering filtering) {
 		CriteriaBuilder cb = em.getCriteriaBuilder();
 		CriteriaQuery<SalesPerson> q = cb.createQuery(SalesPerson.class);
 		Root<SalesPerson> r = q.from(SalesPerson.class);
 		List<Predicate> preds = new ArrayList<>();
-		addSalesPersonPredicates(filtering, cb,q, r, preds,securityContextBase);
+		addSalesPersonPredicates(filtering, cb,q, r, preds,securityContext);
 		q.select(r).where(preds.toArray(Predicate[]::new));
 		TypedQuery<SalesPerson> query = em.createQuery(q);
 		BasicRepository.addPagination(filtering, query);
@@ -46,8 +46,8 @@ public class SalesPersonRepository implements Plugin {
 	}
 
 	public <T extends SalesPerson> void addSalesPersonPredicates(SalesPersonFiltering filtering,
-										  CriteriaBuilder cb,CommonAbstractCriteria q, From<?,T> r, List<Predicate> preds,SecurityContextBase securityContextBase) {
-		employeeRepository.addEmployeePredicates(filtering, cb,q, r, preds,securityContextBase);
+										  CriteriaBuilder cb,CommonAbstractCriteria q, From<?,T> r, List<Predicate> preds,SecurityContextBase securityContext) {
+		employeeRepository.addEmployeePredicates(filtering, cb,q, r, preds,securityContext);
 		if (filtering.getSalesRegions() != null && !filtering.getSalesRegions().isEmpty()) {
 			Set<String> ids = filtering.getSalesRegions().parallelStream().map(f -> f.getId()).collect(Collectors.toSet());
 			Join<T, SalesPersonToRegion> j1 = r.join(SalesPerson_.salesPersonToRegions);
@@ -56,13 +56,13 @@ public class SalesPersonRepository implements Plugin {
 		}
 	}
 
-	public Long countAllSalesPersons(SecurityContextBase securityContextBase,
-									 SalesPersonFiltering filtering) {
+	public Long countAllSalesPeople(SecurityContextBase securityContext,
+									SalesPersonFiltering filtering) {
 		CriteriaBuilder cb = em.getCriteriaBuilder();
 		CriteriaQuery<Long> q = cb.createQuery(Long.class);
 		Root<SalesPerson> r = q.from(SalesPerson.class);
 		List<Predicate> preds = new ArrayList<>();
-		addSalesPersonPredicates(filtering, cb,q, r, preds,securityContextBase);
+		addSalesPersonPredicates(filtering, cb,q, r, preds,securityContext);
 		q.select(cb.count(r)).where(preds.toArray(Predicate[]::new));
 		TypedQuery<Long> query = em.createQuery(q);
 		return query.getSingleResult();

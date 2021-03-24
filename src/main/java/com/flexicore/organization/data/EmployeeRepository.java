@@ -31,31 +31,31 @@ public class EmployeeRepository implements Plugin {
 	@Autowired
 	private SecuredBasicRepository securedBasicRepository;
 
-	public List<Employee> listAllEmployees(SecurityContextBase securityContextBase,
+	public List<Employee> listAllEmployees(SecurityContextBase securityContext,
 										   EmployeeFiltering filtering) {
 		CriteriaBuilder cb = em.getCriteriaBuilder();
 		CriteriaQuery<Employee> q = cb.createQuery(Employee.class);
 		Root<Employee> r = q.from(Employee.class);
 		List<Predicate> preds = new ArrayList<>();
-		addEmployeePredicates(filtering, cb,q, r, preds,securityContextBase);
+		addEmployeePredicates(filtering, cb,q, r, preds,securityContext);
 		q.select(r).where(preds.toArray(Predicate[]::new));
 		TypedQuery<Employee> query = em.createQuery(q);
 		BasicRepository.addPagination(filtering, query);
 		return query.getResultList();
 	}
 
-	public <T extends Employee> void addEmployeePredicates(EmployeeFiltering filtering, CriteriaBuilder cb, CommonAbstractCriteria q, From<?,T> r, List<Predicate> preds, SecurityContextBase securityContextBase) {
+	public <T extends Employee> void addEmployeePredicates(EmployeeFiltering filtering, CriteriaBuilder cb, CommonAbstractCriteria q, From<?,T> r, List<Predicate> preds, SecurityContextBase securityContext) {
 
-		securedBasicRepository.addSecuredBasicPredicates(filtering.getBasicPropertiesFilter(),cb,q,r,preds,securityContextBase);
+		securedBasicRepository.addSecuredBasicPredicates(filtering.getBasicPropertiesFilter(),cb,q,r,preds,securityContext);
 	}
 
-	public Long countAllEmployees(SecurityContextBase securityContextBase,
+	public Long countAllEmployees(SecurityContextBase securityContext,
 								  EmployeeFiltering filtering) {
 		CriteriaBuilder cb = em.getCriteriaBuilder();
 		CriteriaQuery<Long> q = cb.createQuery(Long.class);
 		Root<Employee> r = q.from(Employee.class);
 		List<Predicate> preds = new ArrayList<>();
-		addEmployeePredicates(filtering, cb,q, r, preds,securityContextBase);
+		addEmployeePredicates(filtering, cb,q, r, preds,securityContext);
 		q.select(cb.count(r)).where(preds.toArray(Predicate[]::new));
 		TypedQuery<Long> query = em.createQuery(q);
 		return query.getSingleResult();

@@ -4,6 +4,7 @@ import com.flexicore.annotations.IOperation;
 import com.flexicore.annotations.OperationsInside;
 
 
+import com.flexicore.organization.model.IndustryToCustomer_;
 import com.wizzdi.flexicore.security.response.PaginationResponse;
 import com.wizzdi.flexicore.boot.base.interfaces.Plugin;
 import com.flexicore.organization.model.IndustryToCustomer;
@@ -27,12 +28,10 @@ import org.springframework.http.HttpStatus;
 
 
 @OperationsInside
-
-@RequestMapping("plugins/IndustryToCustomer")
-
+@RequestMapping("/plugins/IndustryToCustomer")
 @Tag(name = "IndustryToCustomer")
 @Extension
-@Component
+@RestController
 public class IndustryToCustomerController implements Plugin {
 
 
@@ -42,12 +41,12 @@ public class IndustryToCustomerController implements Plugin {
 
 	@Operation(summary = "getAllIndustryToCustomers", description = "Lists all IndustryToCustomers")
 	@IOperation(Name = "getAllIndustryToCustomers", Description = "Lists all IndustryToCustomers")
-	@PostMapping("getAllIndustryToCustomers")
+	@PostMapping("/getAllIndustryToCustomers")
 	public PaginationResponse<IndustryToCustomer> getAllIndustryToCustomers(
 
-			@RequestBody IndustryToCustomerFiltering filtering, @RequestAttribute SecurityContextBase securityContextBase) {
-		service.validateFiltering(filtering, securityContextBase);
-		return service.getAllIndustryToCustomers(securityContextBase, filtering);
+			@RequestBody IndustryToCustomerFiltering filtering, @RequestAttribute SecurityContextBase securityContext) {
+		service.validateFiltering(filtering, securityContext);
+		return service.getAllIndustryToCustomers(securityContext, filtering);
 	}
 
 
@@ -57,10 +56,10 @@ public class IndustryToCustomerController implements Plugin {
 	public IndustryToCustomer createIndustryToCustomer(
 
 			@RequestBody IndustryToCustomerCreate creationContainer,
-			@RequestAttribute SecurityContextBase securityContextBase) {
-		service.validate(creationContainer, securityContextBase);
+			@RequestAttribute SecurityContextBase securityContext) {
+		service.validate(creationContainer, securityContext);
 
-		return service.createIndustryToCustomer(creationContainer, securityContextBase);
+		return service.createIndustryToCustomer(creationContainer, securityContext);
 	}
 
 
@@ -70,16 +69,16 @@ public class IndustryToCustomerController implements Plugin {
 	public IndustryToCustomer updateIndustryToCustomer(
 
 			@RequestBody IndustryToCustomerUpdate updateContainer,
-			@RequestAttribute SecurityContextBase securityContextBase) {
-		service.validate(updateContainer, securityContextBase);
+			@RequestAttribute SecurityContextBase securityContext) {
+		service.validate(updateContainer, securityContext);
 		IndustryToCustomer industryToCustomer = service.getByIdOrNull(updateContainer.getId(),
-				IndustryToCustomer.class, null, securityContextBase);
+				IndustryToCustomer.class, IndustryToCustomer_.security, securityContext);
 		if (industryToCustomer == null) {
 			throw new ResponseStatusException(HttpStatus.BAD_REQUEST,"no IndustryToCustomer with id "
 					+ updateContainer.getId());
 		}
 		updateContainer.setIndustryToCustomer(industryToCustomer);
 
-		return service.updateIndustryToCustomer(updateContainer, securityContextBase);
+		return service.updateIndustryToCustomer(updateContainer, securityContext);
 	}
 }

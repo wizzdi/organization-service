@@ -82,38 +82,39 @@ public class SalesPersonToRegionService implements Plugin {
 
 
 	public void validateFiltering(SalesPersonToRegionFiltering filtering,
-								  SecurityContextBase securityContextBase) {
-		basicService.validate(filtering, securityContextBase);
+								  SecurityContextBase securityContext) {
+		basicService.validate(filtering, securityContext);
 
 	}
 
 
 	public PaginationResponse<SalesPersonToRegion> getAllSalesPersonToRegions(
-			SecurityContextBase securityContextBase, SalesPersonToRegionFiltering filtering) {
-		List<SalesPersonToRegion> list = listAllSalesPersonToRegions(securityContextBase, filtering);
-		long count = repository.countAllSalesPersonToRegions(securityContextBase, filtering);
+			SecurityContextBase securityContext, SalesPersonToRegionFiltering filtering) {
+		List<SalesPersonToRegion> list = listAllSalesPersonToRegions(securityContext, filtering);
+		long count = repository.countAllSalesPersonToRegions(securityContext, filtering);
 		return new PaginationResponse<>(list, filtering, count);
 	}
 
 
-	public List<SalesPersonToRegion> listAllSalesPersonToRegions(SecurityContextBase securityContextBase,
+	public List<SalesPersonToRegion> listAllSalesPersonToRegions(SecurityContextBase securityContext,
 								   SalesPersonToRegionFiltering filtering) {
-		return repository.getAllSalesPersonToRegions(securityContextBase, filtering);
+		return repository.getAllSalesPersonToRegions(securityContext, filtering);
 	}
 
 	public SalesPersonToRegion createSalesPersonToRegion(SalesPersonToRegionCreate creationContainer,
-						   SecurityContextBase securityContextBase) {
-		SalesPersonToRegion salesPersonToRegion = createSalesPersonToRegionNoMerge(creationContainer, securityContextBase);
+						   SecurityContextBase securityContext) {
+		SalesPersonToRegion salesPersonToRegion = createSalesPersonToRegionNoMerge(creationContainer, securityContext);
 		repository.merge(salesPersonToRegion);
 		return salesPersonToRegion;
 	}
 
 
 	public SalesPersonToRegion createSalesPersonToRegionNoMerge(SalesPersonToRegionCreate creationContainer,
-								  SecurityContextBase securityContextBase) {
+								  SecurityContextBase securityContext) {
 		SalesPersonToRegion salesPersonToRegion = new SalesPersonToRegion();
+		salesPersonToRegion.setId(Baseclass.getBase64ID());
 		updateSalesPersonToRegionNoMerge(salesPersonToRegion, creationContainer);
-		BaseclassService.createSecurityObjectNoMerge(salesPersonToRegion, securityContextBase);
+		BaseclassService.createSecurityObjectNoMerge(salesPersonToRegion, securityContext);
 
 		return salesPersonToRegion;
 	}
@@ -133,7 +134,7 @@ public class SalesPersonToRegionService implements Plugin {
 		return update;
 	}
 
-	public SalesPersonToRegion updateSalesPersonToRegion(SalesPersonToRegionUpdate updateContainer, SecurityContextBase securityContextBase) {
+	public SalesPersonToRegion updateSalesPersonToRegion(SalesPersonToRegionUpdate updateContainer, SecurityContextBase securityContext) {
 		SalesPersonToRegion salesPersonToRegion = updateContainer.getSalesPersonToRegion();
 		if (updateSalesPersonToRegionNoMerge(salesPersonToRegion, updateContainer)) {
 			repository.merge(salesPersonToRegion);
@@ -142,11 +143,11 @@ public class SalesPersonToRegionService implements Plugin {
 	}
 
 
-	public void validate(SalesPersonToRegionCreate creationContainer, SecurityContextBase securityContextBase) {
-		basicService.validate(creationContainer,securityContextBase);
+	public void validate(SalesPersonToRegionCreate creationContainer, SecurityContextBase securityContext) {
+		basicService.validate(creationContainer,securityContext);
 		String salesPersonId = creationContainer.getSalesPersonId();
 		SalesPerson salesPerson = salesPersonId == null ? null : getByIdOrNull(salesPersonId,
-				SalesPerson.class, SalesPerson_.security, securityContextBase);
+				SalesPerson.class, SalesPerson_.security, securityContext);
 		if (salesPerson == null && salesPersonId != null) {
 			throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "No SalesPerson with id " + salesPersonId);
 		}
@@ -154,7 +155,7 @@ public class SalesPersonToRegionService implements Plugin {
 
 		String salesRegionId = creationContainer.getSalesRegionId();
 		SalesRegion salesRegion = salesRegionId == null ? null : getByIdOrNull(salesRegionId,
-				SalesRegion.class, SalesPerson_.security, securityContextBase);
+				SalesRegion.class, SalesPerson_.security, securityContext);
 		if (salesRegion == null && salesRegionId != null) {
 			throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "No SalesRegion with id " + salesRegionId);
 		}

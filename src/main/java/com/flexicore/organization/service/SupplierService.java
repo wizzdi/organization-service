@@ -81,33 +81,35 @@ public class SupplierService implements Plugin {
 	}
 
 	public PaginationResponse<Supplier> listAllSuppliers(
-			SecurityContextBase securityContextBase, SupplierFiltering filtering) {
+			SecurityContextBase securityContext, SupplierFiltering filtering) {
 
-		List<Supplier> endpoints = repository.getAllSuppliers(securityContextBase,
+		List<Supplier> endpoints = repository.getAllSuppliers(securityContext,
 				filtering);
-		long count = repository.countAllSuppliers(securityContextBase, filtering);
+		long count = repository.countAllSuppliers(securityContext, filtering);
 		return new PaginationResponse<>(endpoints, filtering, count);
 	}
 
 
-	public List<Supplier> getAllSuppliers(SecurityContextBase securityContextBase,
+	public List<Supplier> getAllSuppliers(SecurityContextBase securityContext,
 										  SupplierFiltering filtering) {
-		return repository.getAllSuppliers(securityContextBase, filtering);
+		return repository.getAllSuppliers(securityContext, filtering);
 	}
 
 
 	public Supplier createSupplierNoMerge(SupplierCreate creationContainer,
-										  SecurityContextBase securityContextBase) {
+										  SecurityContextBase securityContext) {
 		Supplier supplier = new Supplier();
+		supplier.setId(Baseclass.getBase64ID());
+
 		updateSupplierNoMerge(creationContainer, supplier);
-		BaseclassService.createSecurityObjectNoMerge(supplier, securityContextBase);
+		BaseclassService.createSecurityObjectNoMerge(supplier, securityContext);
 
 		return supplier;
 
 	}
 
 	public Supplier updateSupplier(SupplierUpdate creationContainer,
-								   SecurityContextBase securityContextBase) {
+								   SecurityContextBase securityContext) {
 		Supplier Supplier = creationContainer.getSupplier();
 		if (updateSupplierNoMerge(creationContainer, Supplier)) {
 			repository.merge(Supplier);
@@ -129,16 +131,16 @@ public class SupplierService implements Plugin {
 	}
 
 	public void validateFiltering(SupplierFiltering filtering,
-								  SecurityContextBase securityContextBase) {
-		organizationService.validateFiltering(filtering,securityContextBase);
+								  SecurityContextBase securityContext) {
+		organizationService.validateFiltering(filtering,securityContext);
 
 
 	}
 
 
 	public void validateCreate(SupplierCreate creationContainer,
-							   SecurityContextBase securityContextBase) {
-		organizationService.validate(creationContainer,securityContextBase);
+							   SecurityContextBase securityContext) {
+		organizationService.validate(creationContainer,securityContext);
 		if (creationContainer.getName() == null
 				|| creationContainer.getName().isEmpty()) {
 			throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
@@ -146,12 +148,12 @@ public class SupplierService implements Plugin {
 		}
 		SupplierFiltering supplierFiltering = new SupplierFiltering();
 		supplierFiltering.setBasicPropertiesFilter(new BasicPropertiesFilter().setNameLike(creationContainer.getName()));
-		List<Supplier> suppliers = getAllSuppliers(securityContextBase, supplierFiltering);
+		List<Supplier> suppliers = getAllSuppliers(securityContext, supplierFiltering);
 		if (!suppliers.isEmpty()) {
 			throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Supplier with name " + creationContainer.getName() + " already exists");
 		}
 		String supplierApiId = creationContainer.getSupplierApiId();
-		SupplierApi supplierApi = supplierApiId != null ? getByIdOrNull(supplierApiId, SupplierApi.class, null, securityContextBase) : null;
+		SupplierApi supplierApi = supplierApiId != null ? getByIdOrNull(supplierApiId, SupplierApi.class, null, securityContext) : null;
 		if (supplierApi == null && supplierApiId != null) {
 			throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "No Supplier api id " + supplierApiId);
 		}
@@ -160,12 +162,12 @@ public class SupplierService implements Plugin {
 	}
 
 	public void validateUpdate(SupplierUpdate creationContainer,
-							   SecurityContextBase securityContextBase) {
+							   SecurityContextBase securityContext) {
 
 		if (creationContainer.getName() != null) {
 			SupplierFiltering supplierFiltering = new SupplierFiltering();
 			supplierFiltering.setBasicPropertiesFilter(new BasicPropertiesFilter().setNameLike(creationContainer.getName()));
-			List<Supplier> suppliers = getAllSuppliers(securityContextBase,
+			List<Supplier> suppliers = getAllSuppliers(securityContext,
 					supplierFiltering)
 					.parallelStream()
 					.filter(f -> !f.getId().equals(
@@ -178,7 +180,7 @@ public class SupplierService implements Plugin {
 		}
 		String supplierApiId = creationContainer.getSupplierApiId();
 		SupplierApi supplierApi = supplierApiId != null ? getByIdOrNull(
-				supplierApiId, SupplierApi.class, null, securityContextBase) : null;
+				supplierApiId, SupplierApi.class, null, securityContext) : null;
 		if (supplierApi == null && supplierApiId != null) {
 			throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "No Supplier api id " + supplierApiId);
 		}
@@ -187,9 +189,9 @@ public class SupplierService implements Plugin {
 	}
 
 	public Supplier createSupplier(SupplierCreate creationContainer,
-								   SecurityContextBase securityContextBase) {
+								   SecurityContextBase securityContext) {
 		Supplier Supplier = createSupplierNoMerge(creationContainer,
-				securityContextBase);
+				securityContext);
 		repository.merge(Supplier);
 		return Supplier;
 	}

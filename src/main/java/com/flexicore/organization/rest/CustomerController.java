@@ -4,6 +4,7 @@ import com.flexicore.annotations.IOperation;
 import com.flexicore.annotations.OperationsInside;
 
 
+import com.flexicore.organization.model.Customer_;
 import com.wizzdi.flexicore.security.response.PaginationResponse;
 import com.wizzdi.flexicore.boot.base.interfaces.Plugin;
 import com.flexicore.organization.model.Customer;
@@ -29,11 +30,11 @@ import org.springframework.http.HttpStatus;
 
 @OperationsInside
 
-@RequestMapping("plugins/organization/Customer")
+@RequestMapping("/plugins/Customer")
 
 @Tag(name = "Customer")
 @Extension
-@Component
+@RestController
 public class CustomerController implements Plugin {
 
 
@@ -43,12 +44,12 @@ public class CustomerController implements Plugin {
 
 	@Operation(summary = "getAllCustomers", description = "Lists all Customers")
 	@IOperation(Name = "getAllCustomers", Description = "Lists all Customers")
-	@PostMapping("getAllCustomers")
+	@PostMapping("/getAllCustomers")
 	public PaginationResponse<Customer> getAllCustomers(
 
-			@RequestBody CustomerFiltering filtering, @RequestAttribute SecurityContextBase securityContextBase) {
-		service.validateFiltering(filtering, securityContextBase);
-		return service.getAllCustomers(securityContextBase, filtering);
+			@RequestBody CustomerFiltering filtering, @RequestAttribute SecurityContextBase securityContext) {
+		service.validateFiltering(filtering, securityContext);
+		return service.getAllCustomers(securityContext, filtering);
 	}
 
 
@@ -58,10 +59,10 @@ public class CustomerController implements Plugin {
 	public Customer createCustomer(
 
 			@RequestBody CustomerCreate creationContainer,
-			@RequestAttribute SecurityContextBase securityContextBase) {
-		service.validate(creationContainer, securityContextBase);
+			@RequestAttribute SecurityContextBase securityContext) {
+		service.validate(creationContainer, securityContext);
 
-		return service.createCustomer(creationContainer, securityContextBase);
+		return service.createCustomer(creationContainer, securityContext);
 	}
 
 	@PutMapping("/updateCustomer")
@@ -70,16 +71,16 @@ public class CustomerController implements Plugin {
 	public Customer updateCustomer(
 
 			@RequestBody CustomerUpdate updateContainer,
-			@RequestAttribute SecurityContextBase securityContextBase) {
-		service.validate(updateContainer, securityContextBase);
+			@RequestAttribute SecurityContextBase securityContext) {
+		service.validate(updateContainer, securityContext);
 		Customer customer = service.getByIdOrNull(updateContainer.getId(),
-				Customer.class, null, securityContextBase);
+				Customer.class, Customer_.security, securityContext);
 		if (customer == null) {
 			throw new ResponseStatusException(HttpStatus.BAD_REQUEST,"no Customer with id "
 					+ updateContainer.getId());
 		}
 		updateContainer.setCustomer(customer);
 
-		return service.updateCustomer(updateContainer, securityContextBase);
+		return service.updateCustomer(updateContainer, securityContext);
 	}
 }

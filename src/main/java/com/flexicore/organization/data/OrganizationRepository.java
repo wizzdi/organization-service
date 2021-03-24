@@ -29,8 +29,8 @@ public class OrganizationRepository implements Plugin {
 	private SecuredBasicRepository securedBasicRepository;
 
 
-	public <T extends Organization> void addOrganizationPredicates(OrganizationFiltering filtering, CriteriaBuilder cb, CommonAbstractCriteria q, From<?,T> r, List<Predicate> preds, SecurityContextBase securityContextBase) {
-		securedBasicRepository.addSecuredBasicPredicates(filtering.getBasicPropertiesFilter(),cb,q,r,preds,securityContextBase);
+	public <T extends Organization> void addOrganizationPredicates(OrganizationFiltering filtering, CriteriaBuilder cb, CommonAbstractCriteria q, From<?,T> r, List<Predicate> preds, SecurityContextBase securityContext) {
+		securedBasicRepository.addSecuredBasicPredicates(filtering.getBasicPropertiesFilter(),cb,q,r,preds,securityContext);
 
 	}
 

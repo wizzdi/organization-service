@@ -4,6 +4,7 @@ import com.flexicore.annotations.IOperation;
 import com.flexicore.annotations.OperationsInside;
 
 
+import com.flexicore.organization.model.Industry_;
 import com.wizzdi.flexicore.security.response.PaginationResponse;
 import com.wizzdi.flexicore.boot.base.interfaces.Plugin;
 import com.flexicore.organization.model.Industry;
@@ -27,12 +28,10 @@ import org.springframework.http.HttpStatus;
 
 
 @OperationsInside
-
-@RequestMapping("plugins/Industry")
-
+@RequestMapping("/plugins/Industry")
 @Tag(name = "Industry")
 @Extension
-@Component
+@RestController
 public class IndustryController implements Plugin {
 
 
@@ -42,12 +41,12 @@ public class IndustryController implements Plugin {
 
 	@Operation(summary = "getAllIndustries", description = "Lists all Industries")
 	@IOperation(Name = "getAllIndustries", Description = "Lists all Industries")
-	@PostMapping("getAllIndustries")
+	@PostMapping("/getAllIndustries")
 	public PaginationResponse<Industry> getAllIndustries(
 
-			@RequestBody IndustryFiltering filtering, @RequestAttribute SecurityContextBase securityContextBase) {
-		service.validateFiltering(filtering, securityContextBase);
-		return service.getAllIndustries(securityContextBase, filtering);
+			@RequestBody IndustryFiltering filtering, @RequestAttribute SecurityContextBase securityContext) {
+		service.validateFiltering(filtering, securityContext);
+		return service.getAllIndustries(securityContext, filtering);
 	}
 
 
@@ -57,10 +56,10 @@ public class IndustryController implements Plugin {
 	public Industry createIndustry(
 
 			@RequestBody IndustryCreate creationContainer,
-			@RequestAttribute SecurityContextBase securityContextBase) {
-		service.validate(creationContainer, securityContextBase);
+			@RequestAttribute SecurityContextBase securityContext) {
+		service.validate(creationContainer, securityContext);
 
-		return service.createIndustry(creationContainer, securityContextBase);
+		return service.createIndustry(creationContainer, securityContext);
 	}
 
 
@@ -70,16 +69,16 @@ public class IndustryController implements Plugin {
 	public Industry updateIndustry(
 
 			@RequestBody IndustryUpdate updateContainer,
-			@RequestAttribute SecurityContextBase securityContextBase) {
-		service.validate(updateContainer, securityContextBase);
+			@RequestAttribute SecurityContextBase securityContext) {
+		service.validate(updateContainer, securityContext);
 		Industry industry = service.getByIdOrNull(updateContainer.getId(),
-				Industry.class, null, securityContextBase);
+				Industry.class, Industry_.security, securityContext);
 		if (industry == null) {
 			throw new ResponseStatusException(HttpStatus.BAD_REQUEST,"no Industry with id "
 					+ updateContainer.getId());
 		}
 		updateContainer.setIndustry(industry);
 
-		return service.updateIndustry(updateContainer, securityContextBase);
+		return service.updateIndustry(updateContainer, securityContext);
 	}
 }

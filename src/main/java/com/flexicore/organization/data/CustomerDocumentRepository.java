@@ -35,33 +35,33 @@ public class CustomerDocumentRepository implements Plugin {
 	@Autowired
 	private SecuredBasicRepository securedBasicRepository;
 
-	public List<CustomerDocument> getAllCustomerDocuments(SecurityContextBase securityContextBase,
+	public List<CustomerDocument> getAllCustomerDocuments(SecurityContextBase securityContext,
 														  CustomerDocumentFiltering filtering) {
 		CriteriaBuilder cb = em.getCriteriaBuilder();
 		CriteriaQuery<CustomerDocument> q = cb.createQuery(CustomerDocument.class);
 		Root<CustomerDocument> r = q.from(CustomerDocument.class);
 		List<Predicate> preds = new ArrayList<>();
-		addCustomerDocumentPredicates(filtering, cb,q, r, preds,securityContextBase);
+		addCustomerDocumentPredicates(filtering, cb,q, r, preds,securityContext);
 		q.select(r).where(preds.toArray(Predicate[]::new));
 		TypedQuery<CustomerDocument> query = em.createQuery(q);
 		BasicRepository.addPagination(filtering, query);
 		return query.getResultList();
 	}
 
-	public long countAllCustomerDocuments(SecurityContextBase securityContextBase,
+	public long countAllCustomerDocuments(SecurityContextBase securityContext,
 										  CustomerDocumentFiltering filtering) {
 		CriteriaBuilder cb = em.getCriteriaBuilder();
 		CriteriaQuery<Long> q = cb.createQuery(Long.class);
 		Root<CustomerDocument> r = q.from(CustomerDocument.class);
 		List<Predicate> preds = new ArrayList<>();
-		addCustomerDocumentPredicates(filtering, cb,q, r, preds,securityContextBase);
+		addCustomerDocumentPredicates(filtering, cb,q, r, preds,securityContext);
 		q.select(cb.count(r)).where(preds.toArray(Predicate[]::new));
 		TypedQuery<Long> query = em.createQuery(q);
 		return query.getSingleResult();
 	}
 
-	private void addCustomerDocumentPredicates(CustomerDocumentFiltering filtering, CriteriaBuilder cb,CommonAbstractCriteria q, Root<CustomerDocument> r, List<Predicate> preds,SecurityContextBase securityContextBase) {
-		securedBasicRepository.addSecuredBasicPredicates(filtering.getBasicPropertiesFilter(), cb,q,r,preds,securityContextBase);
+	private void addCustomerDocumentPredicates(CustomerDocumentFiltering filtering, CriteriaBuilder cb,CommonAbstractCriteria q, Root<CustomerDocument> r, List<Predicate> preds,SecurityContextBase securityContext) {
+		securedBasicRepository.addSecuredBasicPredicates(filtering.getBasicPropertiesFilter(), cb,q,r,preds,securityContext);
 		if (filtering.getCustomers() != null && !filtering.getCustomers().isEmpty()) {
 			Set<String> ids = filtering.getCustomers().parallelStream().map(f -> f.getId()).collect(Collectors.toSet());
 			Join<CustomerDocument, Customer> join = r.join(CustomerDocument_.customer);

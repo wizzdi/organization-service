@@ -46,10 +46,10 @@ public class BranchService implements Plugin {
 
 
 	public void validateFiltering(BranchFiltering filtering,
-			SecurityContextBase securityContextBase) {
-		siteService.validateFiltering(filtering, securityContextBase);
+			SecurityContextBase securityContext) {
+		siteService.validateFiltering(filtering, securityContext);
 		Set<String> organizationIds = filtering.getOrganizationIds();
-		Map<String, Organization> organizations = organizationIds.isEmpty() ? new HashMap<>() : listByIds(Organization.class, organizationIds, SecuredBasic_.security, securityContextBase).parallelStream().collect(Collectors.toMap(f -> f.getId(), f -> f));
+		Map<String, Organization> organizations = organizationIds.isEmpty() ? new HashMap<>() : listByIds(Organization.class, organizationIds, SecuredBasic_.security, securityContext).parallelStream().collect(Collectors.toMap(f -> f.getId(), f -> f));
 		organizationIds.removeAll(organizations.keySet());
 		if (!organizationIds.isEmpty()) {
 			throw new ResponseStatusException(HttpStatus.BAD_REQUEST,"No Organization with ids " + organizationIds);
@@ -58,25 +58,26 @@ public class BranchService implements Plugin {
 	}
 
 	public PaginationResponse<Branch> getAllBranches(
-			SecurityContextBase securityContextBase, BranchFiltering filtering) {
-		List<Branch> list = repository.getAllBranches(securityContextBase,
+			SecurityContextBase securityContext, BranchFiltering filtering) {
+		List<Branch> list = repository.getAllBranches(securityContext,
 				filtering);
-		long count = repository.countAllBranches(securityContextBase, filtering);
+		long count = repository.countAllBranches(securityContext, filtering);
 		return new PaginationResponse<>(list, filtering, count);
 	}
 
 	public Branch createBranch(BranchCreate creationContainer,
-			SecurityContextBase securityContextBase) {
-		Branch branch = createBranchNoMerge(creationContainer, securityContextBase);
+			SecurityContextBase securityContext) {
+		Branch branch = createBranchNoMerge(creationContainer, securityContext);
 		repository.merge(branch);
 		return branch;
 	}
 
 	private Branch createBranchNoMerge(BranchCreate creationContainer,
-			SecurityContextBase securityContextBase) {
+			SecurityContextBase securityContext) {
 		Branch branch = new Branch();
-		Baseclass securityObjectNoMerge = BaseclassService.createSecurityObjectNoMerge(branch, securityContextBase);
+		branch.setId(Baseclass.getBase64ID());
 		updateBranchNoMerge(branch, creationContainer);
+		BaseclassService.createSecurityObjectNoMerge(branch, securityContext);
 		return branch;
 	}
 
@@ -93,7 +94,7 @@ public class BranchService implements Plugin {
 	}
 
 	public Branch updateBranch(BranchUpdate updateContainer,
-			SecurityContextBase securityContextBase) {
+			SecurityContextBase securityContext) {
 		Branch branch = updateContainer.getBranch();
 		if (updateBranchNoMerge(branch, updateContainer)) {
 			repository.merge(branch);
@@ -102,10 +103,10 @@ public class BranchService implements Plugin {
 	}
 
 	public void validate(BranchCreate creationContainer,
-			SecurityContextBase securityContextBase) {
-		siteService.validate(creationContainer, securityContextBase);
+			SecurityContextBase securityContext) {
+		siteService.validate(creationContainer, securityContext);
 		String organizationId = creationContainer.getOrganizationId();
-		Organization organization = organizationId == null ? null : getByIdOrNull(organizationId, Organization.class, null, securityContextBase);
+		Organization organization = organizationId == null ? null : getByIdOrNull(organizationId, Organization.class, null, securityContext);
 		if (organization == null && organizationId != null) {
 			throw new ResponseStatusException(HttpStatus.BAD_REQUEST,"No Organization with id " + organizationId);
 		}
@@ -113,8 +114,8 @@ public class BranchService implements Plugin {
 	}
 
 
-	public long countAllBranches(SecurityContextBase securityContextBase, BranchFiltering filtering) {
-		return repository.countAllBranches(securityContextBase, filtering);
+	public long countAllBranches(SecurityContextBase securityContext, BranchFiltering filtering) {
+		return repository.countAllBranches(securityContext, filtering);
 	}
 
 	public <T extends Baseclass> List<T> listByIds(Class<T> c, Set<String> ids, SecurityContextBase securityContext) {

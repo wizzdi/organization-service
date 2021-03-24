@@ -80,34 +80,36 @@ public class CustomerDocumentService implements Plugin {
 	}
 
 	public void validateFiltering(CustomerDocumentFiltering filtering,
-			SecurityContextBase securityContextBase) {
-		basicService.validate(filtering, securityContextBase);
+			SecurityContextBase securityContext) {
+		basicService.validate(filtering, securityContext);
 		Set<String> customerIds = filtering.getCustomerIds();
-		Map<String, Customer> customers = customerIds.isEmpty() ? new HashMap<>() : listByIds(Customer.class, customerIds, SecuredBasic_.security, securityContextBase).parallelStream().collect(Collectors.toMap(f -> f.getId(), f -> f));
+		Map<String, Customer> customers = customerIds.isEmpty() ? new HashMap<>() : listByIds(Customer.class, customerIds, SecuredBasic_.security, securityContext).parallelStream().collect(Collectors.toMap(f -> f.getId(), f -> f));
 		customerIds.removeAll(customers.keySet());
 		if (!customerIds.isEmpty()) { throw new ResponseStatusException(HttpStatus.BAD_REQUEST,"No Organization with ids " + customerIds);
 		}
 		filtering.setCustomers(new ArrayList<>(customers.values()));
 	}
 
-	public PaginationResponse<CustomerDocument> getAllCustomerDocuments(SecurityContextBase securityContextBase, CustomerDocumentFiltering filtering) {
-		List<CustomerDocument> list = repository.getAllCustomerDocuments(securityContextBase, filtering);
-		long count = repository.countAllCustomerDocuments(securityContextBase, filtering);
+	public PaginationResponse<CustomerDocument> getAllCustomerDocuments(SecurityContextBase securityContext, CustomerDocumentFiltering filtering) {
+		List<CustomerDocument> list = repository.getAllCustomerDocuments(securityContext, filtering);
+		long count = repository.countAllCustomerDocuments(securityContext, filtering);
 		return new PaginationResponse<>(list, filtering, count);
 	}
 
 	public CustomerDocument createCustomerDocument(CustomerDocumentCreate creationContainer,
-			SecurityContextBase securityContextBase) {
-		CustomerDocument customerDocument = createCustomerDocumentNoMerge(creationContainer, securityContextBase);
+			SecurityContextBase securityContext) {
+		CustomerDocument customerDocument = createCustomerDocumentNoMerge(creationContainer, securityContext);
 		repository.merge(customerDocument);
 		return customerDocument;
 	}
 
 	private CustomerDocument createCustomerDocumentNoMerge(CustomerDocumentCreate creationContainer,
-			SecurityContextBase securityContextBase) {
+			SecurityContextBase securityContext) {
 		CustomerDocument customerDocument = new CustomerDocument();
-		Baseclass securityObjectNoMerge = BaseclassService.createSecurityObjectNoMerge(customerDocument, securityContextBase);
+		customerDocument.setId(Baseclass.getBase64ID());
 		updateCustomerDocumentNoMerge(customerDocument, creationContainer);
+		BaseclassService.createSecurityObjectNoMerge(customerDocument, securityContext);
+
 		return customerDocument;
 	}
 
@@ -128,7 +130,7 @@ public class CustomerDocumentService implements Plugin {
 	}
 
 	public CustomerDocument updateCustomerDocument(CustomerDocumentUpdate updateContainer,
-			SecurityContextBase securityContextBase) {
+			SecurityContextBase securityContext) {
 		CustomerDocument customerDocument = updateContainer.getCustomerDocument();
 		if (updateCustomerDocumentNoMerge(customerDocument, updateContainer)) {
 			repository.merge(customerDocument);
@@ -137,17 +139,17 @@ public class CustomerDocumentService implements Plugin {
 	}
 
 	public void validate(CustomerDocumentCreate creationContainer,
-			SecurityContextBase securityContextBase) {
-		basicService.validate(creationContainer, securityContextBase);
+			SecurityContextBase securityContext) {
+		basicService.validate(creationContainer, securityContext);
 		String customerId = creationContainer.getCustomerId();
-		Customer customer = customerId == null ? null : getByIdOrNull(customerId, Customer.class, null, securityContextBase);
+		Customer customer = customerId == null ? null : getByIdOrNull(customerId, Customer.class, null, securityContext);
 		if (customer == null && customerId != null) {
 			throw new ResponseStatusException(HttpStatus.BAD_REQUEST,"No Customer with id " + customerId);
 		}
 		creationContainer.setCustomer(customer);
 
 		String fileResourceId = creationContainer.getFileResourceId();
-		FileResource fileResource = fileResourceId == null ? null : getByIdOrNull(fileResourceId, FileResource.class, null, securityContextBase);
+		FileResource fileResource = fileResourceId == null ? null : getByIdOrNull(fileResourceId, FileResource.class, null, securityContext);
 		if (fileResource == null && fileResourceId != null) {
 			throw new ResponseStatusException(HttpStatus.BAD_REQUEST,"No FileResource with id " + fileResourceId);
 		}

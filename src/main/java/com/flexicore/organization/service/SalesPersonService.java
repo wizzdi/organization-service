@@ -80,37 +80,37 @@ public class SalesPersonService implements Plugin {
 		repository.massMerge(toMerge);
 	}
 
-	public PaginationResponse<SalesPerson> listAllSalesPersons(
-			SecurityContextBase securityContextBase, SalesPersonFiltering filtering) {
+	public PaginationResponse<SalesPerson> getAllSalesPeople(
+			SecurityContextBase securityContext, SalesPersonFiltering filtering) {
 
-		List<SalesPerson> endpoints = repository.listAllSalesPersons(
-				securityContextBase, filtering);
-		long count = repository
-				.countAllSalesPersons(securityContextBase, filtering);
+		List<SalesPerson> endpoints = repository.listAllSalesPeople(securityContext, filtering);
+		long count = repository.countAllSalesPeople(securityContext, filtering);
 		return new PaginationResponse<>(endpoints, filtering, count);
 	}
 
 	public SalesPerson createSalesPerson(SalesPersonCreate creationContainer,
-			SecurityContextBase securityContextBase) {
+			SecurityContextBase securityContext) {
 
-		SalesPerson salesPerson = createSalesPersonNoMerge(creationContainer, securityContextBase);
+		SalesPerson salesPerson = createSalesPersonNoMerge(creationContainer, securityContext);
 
 		repository.merge(salesPerson);
 		return salesPerson;
 	}
 
 	public SalesPerson createSalesPersonNoMerge(
-			SalesPersonCreate creationContainer, SecurityContextBase securityContextBase) {
+			SalesPersonCreate creationContainer, SecurityContextBase securityContext) {
 		SalesPerson salesPerson = new SalesPerson();
+		salesPerson.setId(Baseclass.getBase64ID());
+
 		updateSalesPersonNoMerge(salesPerson, creationContainer);
-		BaseclassService.createSecurityObjectNoMerge(salesPerson, securityContextBase);
+		BaseclassService.createSecurityObjectNoMerge(salesPerson, securityContext);
 
 		return salesPerson;
 
 	}
 
 	public SalesPerson updateSalesPerson(SalesPersonUpdate creationContainer,
-			SecurityContextBase securityContextBase) {
+			SecurityContextBase securityContext) {
 		SalesPerson salesPerson = creationContainer.getSalesPerson();
 		if (updateSalesPersonNoMerge(salesPerson, creationContainer)) {
 			repository.merge(salesPerson);
@@ -124,10 +124,10 @@ public class SalesPersonService implements Plugin {
 	}
 
 	public void validateFiltering(SalesPersonFiltering filtering,
-			SecurityContextBase securityContextBase) {
-		employeeService.validateFiltering(filtering,securityContextBase);
+			SecurityContextBase securityContext) {
+		employeeService.validateFiltering(filtering,securityContext);
 		Set<String> regionIds = filtering.getRegionIds();
-		Map<String, SalesRegion> salesRegion = regionIds.isEmpty() ? new HashMap<>() : listByIds(SalesRegion.class, regionIds, SalesPerson_.security, securityContextBase).parallelStream().collect(Collectors.toMap(f -> f.getId(), f -> f));
+		Map<String, SalesRegion> salesRegion = regionIds.isEmpty() ? new HashMap<>() : listByIds(SalesRegion.class, regionIds, SalesPerson_.security, securityContext).parallelStream().collect(Collectors.toMap(f -> f.getId(), f -> f));
 		regionIds.removeAll(salesRegion.keySet());
 		if (!salesRegion.isEmpty()) {
 			throw new ResponseStatusException(HttpStatus.BAD_REQUEST,"No Sales Region with ids " + regionIds);

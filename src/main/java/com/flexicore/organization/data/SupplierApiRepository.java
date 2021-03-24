@@ -32,25 +32,25 @@ public class SupplierApiRepository implements Plugin {
 	private SecuredBasicRepository securedBasicRepository;
 
 	public List<SupplierApi> getAllSupplierApis(
-			SecurityContextBase securityContextBase, SupplierApiFiltering filtering) {
+			SecurityContextBase securityContext, SupplierApiFiltering filtering) {
 		CriteriaBuilder cb = em.getCriteriaBuilder();
 		CriteriaQuery<SupplierApi> q = cb.createQuery(SupplierApi.class);
 		Root<SupplierApi> r = q.from(SupplierApi.class);
 		List<Predicate> preds = new ArrayList<>();
-		addSupplierApiPredicate(filtering, cb, q, r, preds, securityContextBase);
+		addSupplierApiPredicate(filtering, cb, q, r, preds, securityContext);
 		q.select(r).where(preds.toArray(Predicate[]::new));
 		TypedQuery<SupplierApi> query = em.createQuery(q);
 		BasicRepository.addPagination(filtering, query);
 		return query.getResultList();
 	}
 
-	public Long countAllSupplierApis(SecurityContextBase securityContextBase,
+	public Long countAllSupplierApis(SecurityContextBase securityContext,
 									 SupplierApiFiltering filtering) {
 		CriteriaBuilder cb = em.getCriteriaBuilder();
 		CriteriaQuery<Long> q = cb.createQuery(Long.class);
 		Root<SupplierApi> r = q.from(SupplierApi.class);
 		List<Predicate> preds = new ArrayList<>();
-		addSupplierApiPredicate(filtering, cb, q, r, preds, securityContextBase);
+		addSupplierApiPredicate(filtering, cb, q, r, preds, securityContext);
 		q.select(cb.count(r)).where(preds.toArray(Predicate[]::new));
 		TypedQuery<Long> query = em.createQuery(q);
 		BasicRepository.addPagination(filtering, query);
@@ -58,8 +58,8 @@ public class SupplierApiRepository implements Plugin {
 	}
 
 	public <T extends SupplierApi> void addSupplierApiPredicate(SupplierApiFiltering filtering,
-																CriteriaBuilder cb, CommonAbstractCriteria q, From<?, T> r, List<Predicate> preds, SecurityContextBase securityContextBase) {
-		securedBasicRepository.addSecuredBasicPredicates(filtering.getBasicPropertiesFilter(), cb, q, r, preds, securityContextBase);
+																CriteriaBuilder cb, CommonAbstractCriteria q, From<?, T> r, List<Predicate> preds, SecurityContextBase securityContext) {
+		securedBasicRepository.addSecuredBasicPredicates(filtering.getBasicPropertiesFilter(), cb, q, r, preds, securityContext);
 
 	}
 

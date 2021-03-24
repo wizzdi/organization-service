@@ -80,36 +80,36 @@ public class SalesRegionService implements Plugin {
 		repository.massMerge(toMerge);
 	}
 
-	public PaginationResponse<SalesRegion> listAllSalesRegions(
-			SecurityContextBase securityContextBase, SalesRegionFiltering filtering) {
+	public PaginationResponse<SalesRegion> getAllSalesRegions(
+			SecurityContextBase securityContext, SalesRegionFiltering filtering) {
 
-		List<SalesRegion> endpoints = repository.listAllSalesRegions(
-				securityContextBase, filtering);
-		long count = repository
-				.countAllSalesRegions(securityContextBase, filtering);
+		List<SalesRegion> endpoints = repository.listAllSalesRegions(securityContext, filtering);
+		long count = repository.countAllSalesRegions(securityContext, filtering);
 		return new PaginationResponse<>(endpoints, filtering, count);
 	}
 
 	public SalesRegion createSalesRegion(SalesRegionCreate creationContainer,
-			SecurityContextBase securityContextBase) {
+			SecurityContextBase securityContext) {
 		SalesRegion salesRegion = createSalesRegionNoMerge(creationContainer,
-				securityContextBase);
+				securityContext);
 		repository.merge(salesRegion);
 		return salesRegion;
 	}
 
 	public SalesRegion createSalesRegionNoMerge(
-			SalesRegionCreate creationContainer, SecurityContextBase securityContextBase) {
+			SalesRegionCreate creationContainer, SecurityContextBase securityContext) {
 		SalesRegion salesRegion = new SalesRegion();
+		salesRegion.setId(Baseclass.getBase64ID());
+
 		updateSalesRegionNoMerge(salesRegion, creationContainer);
-		BaseclassService.createSecurityObjectNoMerge(salesRegion, securityContextBase);
+		BaseclassService.createSecurityObjectNoMerge(salesRegion, securityContext);
 
 		return salesRegion;
 
 	}
 
 	public SalesRegion updateSalesRegion(SalesRegionUpdate creationContainer,
-			SecurityContextBase securityContextBase) {
+			SecurityContextBase securityContext) {
 		SalesRegion salesRegion = creationContainer.getSalesRegion();
 		if (updateSalesRegionNoMerge(salesRegion, creationContainer)) {
 			repository.merge(salesRegion);
@@ -125,8 +125,8 @@ public class SalesRegionService implements Plugin {
 	}
 
 	public void validateFiltering(SalesRegionFiltering filtering,
-			SecurityContextBase securityContextBase) {
-		basicService.validate(filtering,securityContextBase);
+			SecurityContextBase securityContext) {
+		basicService.validate(filtering,securityContext);
 
 	}
 

@@ -3,6 +3,7 @@ package com.flexicore.organization.rest;
 import com.flexicore.annotations.IOperation;
 import com.flexicore.annotations.OperationsInside;
 import com.flexicore.organization.model.IndividualCustomer;
+import com.flexicore.organization.model.IndividualCustomer_;
 import com.flexicore.organization.request.IndividualCustomerCreate;
 import com.flexicore.organization.request.IndividualCustomerFiltering;
 import com.flexicore.organization.request.IndividualCustomerUpdate;
@@ -21,12 +22,10 @@ import org.springframework.web.server.ResponseStatusException;
 
 
 @OperationsInside
-
-@RequestMapping("plugins/IndividualCustomer")
-
+@RequestMapping("/plugins/IndividualCustomer")
 @Tag(name = "IndividualCustomer")
 @Extension
-@Component
+@RestController
 public class IndividualCustomerController implements Plugin {
 
 
@@ -36,12 +35,12 @@ public class IndividualCustomerController implements Plugin {
 
 	@Operation(summary = "getAllIndividualCustomers", description = "Lists all IndividualCustomers")
 	@IOperation(Name = "getAllIndividualCustomers", Description = "Lists all IndividualCustomers")
-	@PostMapping("getAllIndividualCustomers")
+	@PostMapping("/getAllIndividualCustomers")
 	public PaginationResponse<IndividualCustomer> getAllIndividualCustomers(
 
-			@RequestBody IndividualCustomerFiltering filtering, @RequestAttribute SecurityContextBase securityContextBase) {
-		service.validateFiltering(filtering, securityContextBase);
-		return service.getAllIndividualCustomers(securityContextBase, filtering);
+			@RequestBody IndividualCustomerFiltering filtering, @RequestAttribute SecurityContextBase securityContext) {
+		service.validateFiltering(filtering, securityContext);
+		return service.getAllIndividualCustomers(securityContext, filtering);
 	}
 
 
@@ -51,10 +50,10 @@ public class IndividualCustomerController implements Plugin {
 	public IndividualCustomer createIndividualCustomer(
 
 			@RequestBody IndividualCustomerCreate creationContainer,
-			@RequestAttribute SecurityContextBase securityContextBase) {
-		service.validate(creationContainer, securityContextBase);
+			@RequestAttribute SecurityContextBase securityContext) {
+		service.validate(creationContainer, securityContext);
 
-		return service.createIndividualCustomer(creationContainer, securityContextBase);
+		return service.createIndividualCustomer(creationContainer, securityContext);
 	}
 
 
@@ -64,16 +63,16 @@ public class IndividualCustomerController implements Plugin {
 	public IndividualCustomer updateIndividualCustomer(
 
 			@RequestBody IndividualCustomerUpdate updateContainer,
-			@RequestAttribute SecurityContextBase securityContextBase) {
-		service.validate(updateContainer, securityContextBase);
+			@RequestAttribute SecurityContextBase securityContext) {
+		service.validate(updateContainer, securityContext);
 		IndividualCustomer individualCustomer = service.getByIdOrNull(updateContainer.getId(),
-				IndividualCustomer.class, null, securityContextBase);
+				IndividualCustomer.class, IndividualCustomer_.security, securityContext);
 		if (individualCustomer == null) {
 			throw new ResponseStatusException(HttpStatus.BAD_REQUEST,"no IndividualCustomer with id "
 					+ updateContainer.getId());
 		}
 		updateContainer.setIndividualCustomer(individualCustomer);
 
-		return service.updateIndividualCustomer(updateContainer, securityContextBase);
+		return service.updateIndividualCustomer(updateContainer, securityContext);
 	}
 }

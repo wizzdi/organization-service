@@ -13,9 +13,9 @@ public class SupplierUpdate extends SupplierCreate {
 		return id;
 	}
 
-	public SupplierUpdate setId(String id) {
+	public <T extends SupplierUpdate> T setId(String id) {
 		this.id = id;
-		return this;
+		return (T) this;
 	}
 
 	@JsonIgnore
@@ -23,8 +23,8 @@ public class SupplierUpdate extends SupplierCreate {
 		return supplier;
 	}
 
-	public SupplierUpdate setSupplier(Supplier supplier) {
+	public <T extends SupplierUpdate> T setSupplier(Supplier supplier) {
 		this.supplier = supplier;
-		return this;
+		return (T) this;
 	}
 }

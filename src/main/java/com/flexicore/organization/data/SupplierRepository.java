@@ -30,13 +30,13 @@ public class SupplierRepository implements Plugin {
 	@Autowired
 	private OrganizationRepository organizationRepository;
 
-	public List<Supplier> getAllSuppliers(SecurityContextBase securityContextBase,
+	public List<Supplier> getAllSuppliers(SecurityContextBase securityContext,
 										  SupplierFiltering filtering) {
 		CriteriaBuilder cb = em.getCriteriaBuilder();
 		CriteriaQuery<Supplier> q = cb.createQuery(Supplier.class);
 		Root<Supplier> r = q.from(Supplier.class);
 		List<Predicate> preds = new ArrayList<>();
-		addSupplierPredicate(filtering, cb,q, r, preds,securityContextBase);
+		addSupplierPredicate(filtering, cb,q, r, preds,securityContext);
 		q.select(r).where(preds.toArray(Predicate[]::new));
 		TypedQuery<Supplier> query = em.createQuery(q);
 		BasicRepository.addPagination(filtering, query);
@@ -44,21 +44,21 @@ public class SupplierRepository implements Plugin {
 	}
 
 
-	public Long countAllSuppliers(SecurityContextBase securityContextBase,
+	public Long countAllSuppliers(SecurityContextBase securityContext,
 								  SupplierFiltering filtering) {
 		CriteriaBuilder cb = em.getCriteriaBuilder();
 		CriteriaQuery<Long> q = cb.createQuery(Long.class);
 		Root<Supplier> r = q.from(Supplier.class);
 		List<Predicate> preds = new ArrayList<>();
-		addSupplierPredicate(filtering, cb,q, r, preds,securityContextBase);
+		addSupplierPredicate(filtering, cb,q, r, preds,securityContext);
 		q.select(cb.count(r)).where(preds.toArray(Predicate[]::new));
 		TypedQuery<Long> query = em.createQuery(q);
 		return query.getSingleResult();
 	}
 
-	public <T extends Supplier> void addSupplierPredicate(SupplierFiltering filtering, CriteriaBuilder cb, CommonAbstractCriteria q,From<?,T> r, List<Predicate> preds,SecurityContextBase securityContextBase) {
+	public <T extends Supplier> void addSupplierPredicate(SupplierFiltering filtering, CriteriaBuilder cb, CommonAbstractCriteria q,From<?,T> r, List<Predicate> preds,SecurityContextBase securityContext) {
 
-		organizationRepository.addOrganizationPredicates(filtering,cb,q,r,preds,securityContextBase);
+		organizationRepository.addOrganizationPredicates(filtering,cb,q,r,preds,securityContext);
 	}
 
 

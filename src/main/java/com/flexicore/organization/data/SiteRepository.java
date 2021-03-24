@@ -36,26 +36,26 @@ public class SiteRepository implements Plugin {
 	@Autowired
 	private SecuredBasicRepository securedBasicRepository;
 
-	public List<Site> getAllSites(SecurityContextBase securityContextBase,
+	public List<Site> getAllSites(SecurityContextBase securityContext,
 								  SiteFiltering filtering) {
 		CriteriaBuilder cb = em.getCriteriaBuilder();
 		CriteriaQuery<Site> q = cb.createQuery(Site.class);
 		Root<Site> r = q.from(Site.class);
 		List<Predicate> preds = new ArrayList<>();
-		addSitePredicates(filtering, cb,q,r, preds,securityContextBase);
+		addSitePredicates(filtering, cb,q,r, preds,securityContext);
 		q.select(r).where(preds.toArray(Predicate[]::new));
 		TypedQuery<Site> query = em.createQuery(q);
 		BasicRepository.addPagination(filtering, query);
 		return query.getResultList();
 	}
 
-	public long countAllSites(SecurityContextBase securityContextBase,
+	public long countAllSites(SecurityContextBase securityContext,
 							  SiteFiltering filtering) {
 		CriteriaBuilder cb = em.getCriteriaBuilder();
 		CriteriaQuery<Long> q = cb.createQuery(Long.class);
 		Root<Site> r = q.from(Site.class);
 		List<Predicate> preds = new ArrayList<>();
-		addSitePredicates(filtering, cb,q,r, preds,securityContextBase);
+		addSitePredicates(filtering, cb,q,r, preds,securityContext);
 		q.select(cb.count(r)).where(preds.toArray(Predicate[]::new));
 		TypedQuery<Long> query = em.createQuery(q);
 		return query.getSingleResult();
@@ -64,9 +64,9 @@ public class SiteRepository implements Plugin {
 
 	public <T extends Site> void addSitePredicates(SiteFiltering filtering,
 												   CriteriaBuilder cb,
-												   CommonAbstractCriteria q,From<?,T> r, List<Predicate> preds,SecurityContextBase securityContextBase) {
+												   CommonAbstractCriteria q,From<?,T> r, List<Predicate> preds,SecurityContextBase securityContext) {
 
-		securedBasicRepository.addSecuredBasicPredicates(filtering.getBasicPropertiesFilter(),cb,q,r,preds,securityContextBase);
+		securedBasicRepository.addSecuredBasicPredicates(filtering.getBasicPropertiesFilter(),cb,q,r,preds,securityContext);
 		if (filtering.getAddresses() != null
 				&& !filtering.getAddresses().isEmpty()) {
 			Set<String> ids = filtering.getAddresses().parallelStream()

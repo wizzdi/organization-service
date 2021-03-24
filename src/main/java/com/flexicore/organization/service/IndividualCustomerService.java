@@ -78,30 +78,31 @@ public class IndividualCustomerService implements Plugin {
 	}
 
 	public void validateFiltering(IndividualCustomerFiltering filtering,
-			SecurityContextBase securityContextBase) {
-		customerService.validateFiltering(filtering, securityContextBase);
+			SecurityContextBase securityContext) {
+		customerService.validateFiltering(filtering, securityContext);
 
 	}
 
 	public PaginationResponse<IndividualCustomer> getAllIndividualCustomers(
-			SecurityContextBase securityContextBase, IndividualCustomerFiltering filtering) {
-		List<IndividualCustomer> list = repository.getAllIndividualCustomers(securityContextBase, filtering);
-		long count = repository.countAllIndividualCustomers(securityContextBase, filtering);
+			SecurityContextBase securityContext, IndividualCustomerFiltering filtering) {
+		List<IndividualCustomer> list = repository.getAllIndividualCustomers(securityContext, filtering);
+		long count = repository.countAllIndividualCustomers(securityContext, filtering);
 		return new PaginationResponse<>(list, filtering, count);
 	}
 
 	public IndividualCustomer createIndividualCustomer(IndividualCustomerCreate creationContainer,
-			SecurityContextBase securityContextBase) {
-		IndividualCustomer individualCustomer = createIndividualCustomerNoMerge(creationContainer, securityContextBase);
+			SecurityContextBase securityContext) {
+		IndividualCustomer individualCustomer = createIndividualCustomerNoMerge(creationContainer, securityContext);
 		repository.merge(individualCustomer);
 		return individualCustomer;
 	}
 
 	public IndividualCustomer createIndividualCustomerNoMerge(IndividualCustomerCreate creationContainer,
-			SecurityContextBase securityContextBase) {
+			SecurityContextBase securityContext) {
 		IndividualCustomer individualCustomer = new IndividualCustomer();
+		individualCustomer.setId(Baseclass.getBase64ID());
 		updateIndividualCustomerNoMerge(individualCustomer, creationContainer);
-		BaseclassService.createSecurityObjectNoMerge(individualCustomer, securityContextBase);
+		BaseclassService.createSecurityObjectNoMerge(individualCustomer, securityContext);
 		return individualCustomer;
 	}
 
@@ -115,7 +116,7 @@ public class IndividualCustomerService implements Plugin {
 	}
 
 	public IndividualCustomer updateIndividualCustomer(IndividualCustomerUpdate updateContainer,
-			SecurityContextBase securityContextBase) {
+			SecurityContextBase securityContext) {
 		IndividualCustomer individualCustomer = updateContainer.getIndividualCustomer();
 		if (updateIndividualCustomerNoMerge(individualCustomer, updateContainer)) {
 			repository.merge(individualCustomer);
@@ -124,8 +125,8 @@ public class IndividualCustomerService implements Plugin {
 	}
 
 	public void validate(IndividualCustomerCreate creationContainer,
-			SecurityContextBase securityContextBase) {
-		customerService.validate(creationContainer, securityContextBase);
+			SecurityContextBase securityContext) {
+		customerService.validate(creationContainer, securityContext);
 
 	}
 }

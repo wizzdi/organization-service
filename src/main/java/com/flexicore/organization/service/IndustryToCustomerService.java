@@ -82,35 +82,36 @@ public class IndustryToCustomerService implements Plugin {
 	}
 
 	public void validateFiltering(IndustryToCustomerFiltering filtering,
-			SecurityContextBase securityContextBase) {
-		basicService.validate(filtering, securityContextBase);
+			SecurityContextBase securityContext) {
+		basicService.validate(filtering, securityContext);
 		Set<String> customerIds = filtering.getCustomerIds();
-		Map<String, Customer> customers = customerIds.isEmpty() ? new HashMap<>() : listByIds(Customer.class, customerIds, Customer_.security, securityContextBase).parallelStream().collect(Collectors.toMap(f -> f.getId(), f -> f));
+		Map<String, Customer> customers = customerIds.isEmpty() ? new HashMap<>() : listByIds(Customer.class, customerIds, Customer_.security, securityContext).parallelStream().collect(Collectors.toMap(f -> f.getId(), f -> f));
 		customerIds.removeAll(customers.keySet());
 		if (!customerIds.isEmpty()) { throw new ResponseStatusException(HttpStatus.BAD_REQUEST,"No Organization with ids " + customerIds);
 		}
 		filtering.setCustomers(new ArrayList<>(customers.values()));
 	}
 
-	public PaginationResponse<IndustryToCustomer> getAllIndustryToCustomers(SecurityContextBase securityContextBase, IndustryToCustomerFiltering filtering) {
-		List<IndustryToCustomer> list = repository.getAllIndustryToCustomers(securityContextBase, filtering);
-		long count = repository.countAllIndustryToCustomers(securityContextBase, filtering);
+	public PaginationResponse<IndustryToCustomer> getAllIndustryToCustomers(SecurityContextBase securityContext, IndustryToCustomerFiltering filtering) {
+		List<IndustryToCustomer> list = repository.getAllIndustryToCustomers(securityContext, filtering);
+		long count = repository.countAllIndustryToCustomers(securityContext, filtering);
 		return new PaginationResponse<>(list, filtering, count);
 	}
 
 	public IndustryToCustomer createIndustryToCustomer(IndustryToCustomerCreate creationContainer,
-			SecurityContextBase securityContextBase) {
-		IndustryToCustomer industryToCustomer = createIndustryToCustomerNoMerge(creationContainer, securityContextBase);
+			SecurityContextBase securityContext) {
+		IndustryToCustomer industryToCustomer = createIndustryToCustomerNoMerge(creationContainer, securityContext);
 		repository.merge(industryToCustomer);
 		return industryToCustomer;
 	}
 
 	public IndustryToCustomer createIndustryToCustomerNoMerge(IndustryToCustomerCreate creationContainer,
-			SecurityContextBase securityContextBase) {
+			SecurityContextBase securityContext) {
 		IndustryToCustomer industryToCustomer = new IndustryToCustomer();
-		BaseclassService.createSecurityObjectNoMerge(industryToCustomer, securityContextBase);
-
+		industryToCustomer.setId(Baseclass.getBase64ID());
 		updateIndustryToCustomerNoMerge(industryToCustomer, creationContainer);
+		BaseclassService.createSecurityObjectNoMerge(industryToCustomer, securityContext);
+
 		return industryToCustomer;
 	}
 
@@ -131,7 +132,7 @@ public class IndustryToCustomerService implements Plugin {
 	}
 
 	public IndustryToCustomer updateIndustryToCustomer(IndustryToCustomerUpdate updateContainer,
-			SecurityContextBase securityContextBase) {
+			SecurityContextBase securityContext) {
 		IndustryToCustomer industryToCustomer = updateContainer.getIndustryToCustomer();
 		if (updateIndustryToCustomerNoMerge(industryToCustomer, updateContainer)) {
 			repository.merge(industryToCustomer);
@@ -140,17 +141,17 @@ public class IndustryToCustomerService implements Plugin {
 	}
 
 	public void validate(IndustryToCustomerCreate creationContainer,
-			SecurityContextBase securityContextBase) {
-		basicService.validate(creationContainer, securityContextBase);
+			SecurityContextBase securityContext) {
+		basicService.validate(creationContainer, securityContext);
 		String customerId = creationContainer.getCustomerId();
-		Customer customer = customerId == null ? null : getByIdOrNull(customerId, Customer.class, null, securityContextBase);
+		Customer customer = customerId == null ? null : getByIdOrNull(customerId, Customer.class, null, securityContext);
 		if (customer == null && customerId != null) {
 			throw new ResponseStatusException(HttpStatus.BAD_REQUEST,"No Customer with id " + customerId);
 		}
 		creationContainer.setCustomer(customer);
 
 		String industryId = creationContainer.getIndustryId();
-		Industry industry = industryId == null ? null : getByIdOrNull(industryId, Industry.class, null, securityContextBase);
+		Industry industry = industryId == null ? null : getByIdOrNull(industryId, Industry.class, null, securityContext);
 		if (industry == null && industryId != null) {
 			throw new ResponseStatusException(HttpStatus.BAD_REQUEST,"No Industry with id " + industryId);
 		}

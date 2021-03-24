@@ -4,6 +4,7 @@ import com.flexicore.annotations.IOperation;
 import com.flexicore.annotations.OperationsInside;
 
 
+import com.flexicore.organization.model.CustomerDocument_;
 import com.wizzdi.flexicore.security.response.PaginationResponse;
 import com.wizzdi.flexicore.boot.base.interfaces.Plugin;
 import com.flexicore.organization.model.CustomerDocument;
@@ -27,11 +28,11 @@ import org.springframework.http.HttpStatus;
 
 @OperationsInside
 
-@RequestMapping("plugins/CustomerDocument")
+@RequestMapping("/plugins/CustomerDocument")
 
 @Tag(name = "CustomerDocument")
 @Extension
-@Component
+@RestController
 public class CustomerDocumentController implements Plugin {
 
 
@@ -41,12 +42,12 @@ public class CustomerDocumentController implements Plugin {
 
 	@Operation(summary = "getAllCustomerDocuments", description = "Lists all CustomerDocuments")
 	@IOperation(Name = "getAllCustomerDocuments", Description = "Lists all CustomerDocuments")
-	@PostMapping("getAllCustomerDocuments")
+	@PostMapping("/getAllCustomerDocuments")
 	public PaginationResponse<CustomerDocument> getAllCustomerDocuments(
 
-			@RequestBody CustomerDocumentFiltering filtering, @RequestAttribute SecurityContextBase securityContextBase) {
-		service.validateFiltering(filtering, securityContextBase);
-		return service.getAllCustomerDocuments(securityContextBase, filtering);
+			@RequestBody CustomerDocumentFiltering filtering, @RequestAttribute SecurityContextBase securityContext) {
+		service.validateFiltering(filtering, securityContext);
+		return service.getAllCustomerDocuments(securityContext, filtering);
 	}
 
 
@@ -56,10 +57,10 @@ public class CustomerDocumentController implements Plugin {
 	public CustomerDocument createCustomerDocument(
 
 			@RequestBody CustomerDocumentCreate creationContainer,
-			@RequestAttribute SecurityContextBase securityContextBase) {
-		service.validate(creationContainer, securityContextBase);
+			@RequestAttribute SecurityContextBase securityContext) {
+		service.validate(creationContainer, securityContext);
 
-		return service.createCustomerDocument(creationContainer, securityContextBase);
+		return service.createCustomerDocument(creationContainer, securityContext);
 	}
 
 
@@ -69,16 +70,16 @@ public class CustomerDocumentController implements Plugin {
 	public CustomerDocument updateCustomerDocument(
 
 			@RequestBody CustomerDocumentUpdate updateContainer,
-			@RequestAttribute SecurityContextBase securityContextBase) {
-		service.validate(updateContainer, securityContextBase);
+			@RequestAttribute SecurityContextBase securityContext) {
+		service.validate(updateContainer, securityContext);
 		CustomerDocument customerDocument = service.getByIdOrNull(updateContainer.getId(),
-				CustomerDocument.class, null, securityContextBase);
+				CustomerDocument.class, CustomerDocument_.security, securityContext);
 		if (customerDocument == null) {
 			throw new ResponseStatusException(HttpStatus.BAD_REQUEST,"no CustomerDocument with id "
 					+ updateContainer.getId());
 		}
 		updateContainer.setCustomerDocument(customerDocument);
 
-		return service.updateCustomerDocument(updateContainer, securityContextBase);
+		return service.updateCustomerDocument(updateContainer, securityContext);
 	}
 }

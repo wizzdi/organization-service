@@ -76,19 +76,19 @@ public class EmployeeService implements Plugin {
 
 	
 	public PaginationResponse<Employee> listAllEmployees(
-			SecurityContextBase securityContextBase, EmployeeFiltering filtering) {
+			SecurityContextBase securityContext, EmployeeFiltering filtering) {
 
-		List<Employee> endpoints = repository.listAllEmployees(securityContextBase,
+		List<Employee> endpoints = repository.listAllEmployees(securityContext,
 				filtering);
-		long count = repository.countAllEmployees(securityContextBase, filtering);
+		long count = repository.countAllEmployees(securityContext, filtering);
 		return new PaginationResponse<>(endpoints, filtering, count);
 	}
 
 	public Employee createEmployee(EmployeeCreate creationContainer,
-			SecurityContextBase securityContextBase) {
+			SecurityContextBase securityContext) {
 
 		Employee employee = createEmployeeNoMerge(creationContainer,
-				securityContextBase);
+				securityContext);
 
 		repository.merge(employee);
 		return employee;
@@ -96,16 +96,18 @@ public class EmployeeService implements Plugin {
 
 	
 	public Employee createEmployeeNoMerge(EmployeeCreate creationContainer,
-			SecurityContextBase securityContextBase) {
+			SecurityContextBase securityContext) {
 		Employee employee = new Employee();
+		employee.setId(Baseclass.getBase64ID());
+
 		updateEmployeeNoMerge(employee, creationContainer);
-		Baseclass securityObjectNoMerge = BaseclassService.createSecurityObjectNoMerge(employee, securityContextBase);
+		BaseclassService.createSecurityObjectNoMerge(employee, securityContext);
 		return employee;
 
 	}
 
 	public Employee updateEmployee(EmployeeUpdate creationContainer,
-			SecurityContextBase securityContextBase) {
+			SecurityContextBase securityContext) {
 		Employee employee = creationContainer.getEmployee();
 		if (updateEmployeeNoMerge(employee, creationContainer)) {
 			repository.merge(employee);
@@ -121,7 +123,7 @@ public class EmployeeService implements Plugin {
 	}
 
 	public void validateFiltering(EmployeeFiltering filtering,
-			SecurityContextBase securityContextBase) {
+			SecurityContextBase securityContext) {
 	}
 
 }

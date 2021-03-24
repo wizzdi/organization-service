@@ -79,34 +79,36 @@ public class OrganizationalCustomerService implements Plugin {
 	}
 
 	public void validateFiltering(OrganizationalCustomerFiltering filtering,
-			SecurityContextBase securityContextBase) {
-		customerService.validateFiltering(filtering, securityContextBase);
+			SecurityContextBase securityContext) {
+		customerService.validateFiltering(filtering, securityContext);
 
 	}
 
 	public PaginationResponse<OrganizationalCustomer> getAllOrganizationalCustomers(
-			SecurityContextBase securityContextBase, OrganizationalCustomerFiltering filtering) {
-		List<OrganizationalCustomer> list = listAllOrganizationalCustomers(securityContextBase, filtering);
-		long count = repository.countAllOrganizationalCustomers(securityContextBase, filtering);
+			SecurityContextBase securityContext, OrganizationalCustomerFiltering filtering) {
+		List<OrganizationalCustomer> list = listAllOrganizationalCustomers(securityContext, filtering);
+		long count = repository.countAllOrganizationalCustomers(securityContext, filtering);
 		return new PaginationResponse<>(list, filtering, count);
 	}
 
-	public List<OrganizationalCustomer> listAllOrganizationalCustomers(SecurityContextBase securityContextBase, OrganizationalCustomerFiltering filtering) {
-		return repository.getAllOrganizationalCustomers(securityContextBase, filtering);
+	public List<OrganizationalCustomer> listAllOrganizationalCustomers(SecurityContextBase securityContext, OrganizationalCustomerFiltering filtering) {
+		return repository.getAllOrganizationalCustomers(securityContext, filtering);
 	}
 
 	public OrganizationalCustomer createOrganizationalCustomer(OrganizationalCustomerCreate creationContainer,
-			SecurityContextBase securityContextBase) {
-		OrganizationalCustomer organizationalCustomer = createOrganizationalCustomerNoMerge(creationContainer, securityContextBase);
+			SecurityContextBase securityContext) {
+		OrganizationalCustomer organizationalCustomer = createOrganizationalCustomerNoMerge(creationContainer, securityContext);
 		repository.merge(organizationalCustomer);
 		return organizationalCustomer;
 	}
 
 	public OrganizationalCustomer createOrganizationalCustomerNoMerge(OrganizationalCustomerCreate creationContainer,
-			SecurityContextBase securityContextBase) {
+			SecurityContextBase securityContext) {
 		OrganizationalCustomer organizationalCustomer = new OrganizationalCustomer();
+		organizationalCustomer.setId(Baseclass.getBase64ID());
+
 		updateOrganizationalCustomerNoMerge(organizationalCustomer, creationContainer);
-		BaseclassService.createSecurityObjectNoMerge(organizationalCustomer, securityContextBase);
+		BaseclassService.createSecurityObjectNoMerge(organizationalCustomer, securityContext);
 		return organizationalCustomer;
 	}
 
@@ -125,7 +127,7 @@ public class OrganizationalCustomerService implements Plugin {
 	}
 
 	public OrganizationalCustomer updateOrganizationalCustomer(OrganizationalCustomerUpdate updateContainer,
-			SecurityContextBase securityContextBase) {
+			SecurityContextBase securityContext) {
 		OrganizationalCustomer organizationalCustomer = updateContainer.getOrganizationalCustomer();
 		if (updateOrganizationalCustomerNoMerge(organizationalCustomer, updateContainer)) {
 			repository.merge(organizationalCustomer);
@@ -134,8 +136,8 @@ public class OrganizationalCustomerService implements Plugin {
 	}
 
 	public void validate(OrganizationalCustomerCreate creationContainer,
-			SecurityContextBase securityContextBase) {
-		customerService.validate(creationContainer, securityContextBase);
+			SecurityContextBase securityContext) {
+		customerService.validate(creationContainer, securityContext);
 
 	}
 }

@@ -35,8 +35,8 @@ public class OrganizationalCustomerRepository implements Plugin {
 	private CustomerRepository customerRepository;
 
 	public <T extends OrganizationalCustomer> void addOrganizationalCustomerPredicates(OrganizationalCustomerFiltering filtering,
-																							  CriteriaBuilder cb,CommonAbstractCriteria q, From<?,T> r, List<Predicate> preds,SecurityContextBase securityContextBase) {
-		customerRepository.addCustomerPredicates(filtering, cb,q, r, preds,securityContextBase);
+																							  CriteriaBuilder cb,CommonAbstractCriteria q, From<?,T> r, List<Predicate> preds,SecurityContextBase securityContext) {
+		customerRepository.addCustomerPredicates(filtering, cb,q, r, preds,securityContext);
 		if (filtering.getOrganizations() != null && !filtering.getOrganizations().isEmpty()) {
 			Set<String> ids = filtering.getOrganizations().stream().map(f -> f.getId()).collect(Collectors.toSet());
 			Join<T, Organization> join = r.join(OrganizationalCustomer_.organization);
@@ -46,26 +46,26 @@ public class OrganizationalCustomerRepository implements Plugin {
 
 	}
 
-	public List<OrganizationalCustomer> getAllOrganizationalCustomers(SecurityContextBase securityContextBase,
+	public List<OrganizationalCustomer> getAllOrganizationalCustomers(SecurityContextBase securityContext,
 																	  OrganizationalCustomerFiltering filtering) {
 		CriteriaBuilder cb = em.getCriteriaBuilder();
 		CriteriaQuery<OrganizationalCustomer> q = cb.createQuery(OrganizationalCustomer.class);
 		Root<OrganizationalCustomer> r = q.from(OrganizationalCustomer.class);
 		List<Predicate> preds = new ArrayList<>();
-		addOrganizationalCustomerPredicates(filtering, cb,q, r, preds,securityContextBase);
+		addOrganizationalCustomerPredicates(filtering, cb,q, r, preds,securityContext);
 		q.select(r).where(preds.toArray(Predicate[]::new));
 		TypedQuery<OrganizationalCustomer> query = em.createQuery(q);
 		BasicRepository.addPagination(filtering, query);
 		return query.getResultList();
 	}
 
-	public long countAllOrganizationalCustomers(SecurityContextBase securityContextBase,
+	public long countAllOrganizationalCustomers(SecurityContextBase securityContext,
 												OrganizationalCustomerFiltering filtering) {
 		CriteriaBuilder cb = em.getCriteriaBuilder();
 		CriteriaQuery<Long> q = cb.createQuery(Long.class);
 		Root<OrganizationalCustomer> r = q.from(OrganizationalCustomer.class);
 		List<Predicate> preds = new ArrayList<>();
-		addOrganizationalCustomerPredicates(filtering, cb,q, r, preds,securityContextBase);
+		addOrganizationalCustomerPredicates(filtering, cb,q, r, preds,securityContext);
 		q.select(cb.count(r)).where(preds.toArray(Predicate[]::new));
 		TypedQuery<Long> query = em.createQuery(q);
 		return query.getSingleResult();

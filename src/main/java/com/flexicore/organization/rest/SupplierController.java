@@ -4,6 +4,7 @@ import com.flexicore.annotations.IOperation;
 import com.flexicore.annotations.OperationsInside;
 
 
+import com.flexicore.organization.model.Supplier_;
 import com.wizzdi.flexicore.security.response.PaginationResponse;
 import com.wizzdi.flexicore.boot.base.interfaces.Plugin;
 import com.flexicore.organization.model.Supplier;
@@ -27,12 +28,10 @@ import org.springframework.http.HttpStatus;
 
 
 @OperationsInside
-
-
-@RequestMapping("plugins/Supplier")
+@RequestMapping("/plugins/Supplier")
 @Tag(name = "Supplier")
 @Extension
-@Component
+@RestController
 public class SupplierController implements Plugin {
 
 
@@ -42,13 +41,13 @@ public class SupplierController implements Plugin {
 
 	@Operation(summary = "getAllSuppliers", description = "Lists all Suppliers")
 	@IOperation(Name = "getAllSuppliers", Description = "Lists all Suppliers")
-	@PostMapping("getAllSuppliers")
+	@PostMapping("/getAllSuppliers")
 	public PaginationResponse<Supplier> listAllSuppliers(
 
 			@RequestBody SupplierFiltering filtering,
-			@RequestAttribute SecurityContextBase securityContextBase) {
-		service.validateFiltering(filtering, securityContextBase);
-		return service.listAllSuppliers(securityContextBase, filtering);
+			@RequestAttribute SecurityContextBase securityContext) {
+		service.validateFiltering(filtering, securityContext);
+		return service.listAllSuppliers(securityContext, filtering);
 	}
 
 
@@ -59,11 +58,11 @@ public class SupplierController implements Plugin {
 	public Supplier createSupplier(
 
 			@RequestBody SupplierCreate creationContainer,
-			@RequestAttribute SecurityContextBase securityContextBase) {
+			@RequestAttribute SecurityContextBase securityContext) {
 
-		service.validateCreate(creationContainer, securityContextBase);
+		service.validateCreate(creationContainer, securityContext);
 
-		return service.createSupplier(creationContainer, securityContextBase);
+		return service.createSupplier(creationContainer, securityContext);
 	}
 
 
@@ -73,17 +72,17 @@ public class SupplierController implements Plugin {
 	public Supplier updateSupplier(
 
 			@RequestBody SupplierUpdate updateContainer,
-			@RequestAttribute SecurityContextBase securityContextBase) {
+			@RequestAttribute SecurityContextBase securityContext) {
 		Supplier Supplier = service.getByIdOrNull(updateContainer.getId(),
-				Supplier.class, null, securityContextBase);
+				Supplier.class, Supplier_.security, securityContext);
 		if (Supplier == null) {
 			throw new ResponseStatusException(HttpStatus.BAD_REQUEST,"no Supplier with id "
 					+ updateContainer.getId());
 		}
 		updateContainer.setSupplier(Supplier);
-		service.validateUpdate(updateContainer, securityContextBase);
+		service.validateUpdate(updateContainer, securityContext);
 
-		return service.updateSupplier(updateContainer, securityContextBase);
+		return service.updateSupplier(updateContainer, securityContext);
 	}
 
 

@@ -9,16 +9,6 @@ public class SupplierCreate extends OrganizationCreate {
 	@JsonIgnore
 	private SupplierApi supplierApi;
 
-	@Override
-	public SupplierCreate setName(String name) {
-		return (SupplierCreate) super.setName(name);
-	}
-
-	@Override
-	public SupplierCreate setDescription(String description) {
-		return (SupplierCreate) super.setDescription(description);
-	}
-
 	public String getSupplierApiId() {
 		return supplierApiId;
 	}

@@ -35,34 +35,34 @@ public class BranchRepository implements Plugin {
 	private SiteRepository siteRepository;
 
 
-	public List<Branch> getAllBranches(SecurityContextBase securityContextBase,
+	public List<Branch> getAllBranches(SecurityContextBase securityContext,
 									   BranchFiltering filtering) {
 		CriteriaBuilder cb = em.getCriteriaBuilder();
 		CriteriaQuery<Branch> q = cb.createQuery(Branch.class);
 		Root<Branch> r = q.from(Branch.class);
 		List<Predicate> preds = new ArrayList<>();
-		addBranchPredicates(filtering, cb,q, r, preds,securityContextBase);
+		addBranchPredicates(filtering, cb,q, r, preds,securityContext);
 		q.select(r).where(preds.toArray(Predicate[]::new));
 		TypedQuery<Branch> query = em.createQuery(q);
 		BasicRepository.addPagination(filtering, query);
 		return query.getResultList();
 	}
 
-	public long countAllBranches(SecurityContextBase securityContextBase,
+	public long countAllBranches(SecurityContextBase securityContext,
 								 BranchFiltering filtering) {
 		CriteriaBuilder cb = em.getCriteriaBuilder();
 		CriteriaQuery<Long> q = cb.createQuery(Long.class);
 		Root<Branch> r = q.from(Branch.class);
 		List<Predicate> preds = new ArrayList<>();
-		addBranchPredicates(filtering, cb,q, r, preds,securityContextBase);
+		addBranchPredicates(filtering, cb,q, r, preds,securityContext);
 		q.select(cb.count(r)).where(preds.toArray(Predicate[]::new));
 		TypedQuery<Long> query = em.createQuery(q);
 		return query.getSingleResult();
 	}
 
 	private void addBranchPredicates(BranchFiltering filtering,
-									 CriteriaBuilder cb,CommonAbstractCriteria q, From<?,Branch> r, List<Predicate> preds,SecurityContextBase securityContextBase) {
-		siteRepository.addSitePredicates(filtering, cb,q, r, preds,securityContextBase);
+									 CriteriaBuilder cb,CommonAbstractCriteria q, From<?,Branch> r, List<Predicate> preds,SecurityContextBase securityContext) {
+		siteRepository.addSitePredicates(filtering, cb,q, r, preds,securityContext);
 		if (filtering.getOrganizations() != null && !filtering.getOrganizations().isEmpty()) {
 			Set<String> ids = filtering.getOrganizations().parallelStream().map(f -> f.getId()).collect(Collectors.toSet());
 			Join<Branch, Organization> join = r.join(Branch_.organization);

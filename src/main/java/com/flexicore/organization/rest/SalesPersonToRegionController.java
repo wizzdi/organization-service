@@ -12,17 +12,14 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import org.pf4j.Extension;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestAttribute;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.*;
 
 
 @OperationsInside
-@RequestMapping("plugins/SalesPersonToRegion")
+@RequestMapping("/plugins/SalesPersonToRegion")
 @Tag(name = "SalesPersonToRegion")
 @Extension
-@Component
+@RestController
 public class SalesPersonToRegionController implements Plugin {
 
 
@@ -36,12 +33,12 @@ public class SalesPersonToRegionController implements Plugin {
 	public SalesPersonToRegion createSalesPersonToRegion(
 
 			@RequestBody  SalesPersonToRegionCreate creationContainer,
-			@RequestAttribute SecurityContextBase securityContextBase) {
+			@RequestAttribute SecurityContextBase securityContext) {
 
-		service.validate(creationContainer, securityContextBase);
+		service.validate(creationContainer, securityContext);
 
 		return service.createSalesPersonToRegion(creationContainer,
-				securityContextBase);
+				securityContext);
 	}
 
 }

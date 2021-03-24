@@ -4,13 +4,12 @@ import com.flexicore.annotations.IOperation;
 import com.flexicore.annotations.OperationsInside;
 
 
+import com.flexicore.organization.model.SalesPerson_;
 import com.wizzdi.flexicore.security.response.PaginationResponse;
 import com.wizzdi.flexicore.boot.base.interfaces.Plugin;
 import com.flexicore.organization.model.SalesPerson;
-import com.flexicore.organization.model.SalesPersonToRegion;
 import com.flexicore.organization.request.SalesPersonCreate;
 import com.flexicore.organization.request.SalesPersonFiltering;
-import com.flexicore.organization.request.SalesPersonToRegionCreate;
 import com.flexicore.organization.request.SalesPersonUpdate;
 import com.flexicore.organization.service.SalesPersonService;
 import com.flexicore.security.SecurityContextBase;
@@ -20,18 +19,16 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 
 import org.pf4j.Extension;
 import org.springframework.http.HttpStatus;
-import org.springframework.stereotype.Component;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
 
 
 @OperationsInside
-
-@RequestMapping("plugins/SalesPerson")
+@RequestMapping("/plugins/SalesPerson")
 @Tag(name = "SalesPerson")
 @Extension
-@Component
+@RestController
 public class SalesPersonController implements Plugin {
 
 
@@ -41,13 +38,13 @@ public class SalesPersonController implements Plugin {
 
 	@Operation(summary = "listAllSalesPersons", description = "Lists all SalesPersons")
 	@IOperation(Name = "listAllSalesPersons", Description = "Lists all SalesPersons")
-	@PostMapping("listAllSalesPersons")
-	public PaginationResponse<SalesPerson> listAllSalesPersons(
+	@PostMapping("/getAllSalesPeople")
+	public PaginationResponse<SalesPerson> getAllSalesPeople(
 
 			@RequestBody SalesPersonFiltering filtering,
-			@RequestAttribute SecurityContextBase securityContextBase) {
-		service.validateFiltering(filtering, securityContextBase);
-		return service.listAllSalesPersons(securityContextBase, filtering);
+			@RequestAttribute SecurityContextBase securityContext) {
+		service.validateFiltering(filtering, securityContext);
+		return service.getAllSalesPeople(securityContext, filtering);
 	}
 
 
@@ -57,9 +54,9 @@ public class SalesPersonController implements Plugin {
 	public SalesPerson createSalesPerson(
 
 			@RequestBody SalesPersonCreate creationContainer,
-			@RequestAttribute SecurityContextBase securityContextBase) {
+			@RequestAttribute SecurityContextBase securityContext) {
 
-		return service.createSalesPerson(creationContainer, securityContextBase);
+		return service.createSalesPerson(creationContainer, securityContext);
 	}
 
 
@@ -69,17 +66,17 @@ public class SalesPersonController implements Plugin {
 	public SalesPerson updateSalesPerson(
 
 			@RequestBody SalesPersonUpdate updateContainer,
-			@RequestAttribute SecurityContextBase securityContextBase) {
+			@RequestAttribute SecurityContextBase securityContext) {
 		SalesPerson salesPerson = service.getByIdOrNull(
-				updateContainer.getId(), SalesPerson.class, null,
-				securityContextBase);
+				updateContainer.getId(), SalesPerson.class, SalesPerson_.security,
+				securityContext);
 		if (salesPerson == null) {
 			throw new ResponseStatusException(HttpStatus.BAD_REQUEST,"no SalesPerson with id "
 					+ updateContainer.getId());
 		}
 		updateContainer.setSalesPerson(salesPerson);
 
-		return service.updateSalesPerson(updateContainer, securityContextBase);
+		return service.updateSalesPerson(updateContainer, securityContext);
 	}
 
 

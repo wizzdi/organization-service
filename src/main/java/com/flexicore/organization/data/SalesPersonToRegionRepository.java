@@ -36,26 +36,26 @@ public class SalesPersonToRegionRepository implements Plugin {
 	@Autowired
 	private SecuredBasicRepository securedBasicRepository;
 
-	public List<SalesPersonToRegion> getAllSalesPersonToRegions(SecurityContextBase securityContextBase,
+	public List<SalesPersonToRegion> getAllSalesPersonToRegions(SecurityContextBase securityContext,
 								  SalesPersonToRegionFiltering filtering) {
 		CriteriaBuilder cb = em.getCriteriaBuilder();
 		CriteriaQuery<SalesPersonToRegion> q = cb.createQuery(SalesPersonToRegion.class);
 		Root<SalesPersonToRegion> r = q.from(SalesPersonToRegion.class);
 		List<Predicate> preds = new ArrayList<>();
-		addSalesPersonToRegionPredicates(filtering, cb,q,r, preds,securityContextBase);
+		addSalesPersonToRegionPredicates(filtering, cb,q,r, preds,securityContext);
 		q.select(r).where(preds.toArray(Predicate[]::new));
 		TypedQuery<SalesPersonToRegion> query = em.createQuery(q);
 		BasicRepository.addPagination(filtering, query);
 		return query.getResultList();
 	}
 
-	public long countAllSalesPersonToRegions(SecurityContextBase securityContextBase,
+	public long countAllSalesPersonToRegions(SecurityContextBase securityContext,
 							  SalesPersonToRegionFiltering filtering) {
 		CriteriaBuilder cb = em.getCriteriaBuilder();
 		CriteriaQuery<Long> q = cb.createQuery(Long.class);
 		Root<SalesPersonToRegion> r = q.from(SalesPersonToRegion.class);
 		List<Predicate> preds = new ArrayList<>();
-		addSalesPersonToRegionPredicates(filtering, cb,q,r, preds,securityContextBase);
+		addSalesPersonToRegionPredicates(filtering, cb,q,r, preds,securityContext);
 		q.select(cb.count(r)).where(preds.toArray(Predicate[]::new));
 		TypedQuery<Long> query = em.createQuery(q);
 		return query.getSingleResult();
@@ -64,9 +64,9 @@ public class SalesPersonToRegionRepository implements Plugin {
 
 	public <T extends SalesPersonToRegion> void addSalesPersonToRegionPredicates(SalesPersonToRegionFiltering filtering,
 												   CriteriaBuilder cb,
-												   CommonAbstractCriteria q,From<?,T> r, List<Predicate> preds,SecurityContextBase securityContextBase) {
+												   CommonAbstractCriteria q,From<?,T> r, List<Predicate> preds,SecurityContextBase securityContext) {
 
-		securedBasicRepository.addSecuredBasicPredicates(filtering.getBasicPropertiesFilter(),cb,q,r,preds,securityContextBase);
+		securedBasicRepository.addSecuredBasicPredicates(filtering.getBasicPropertiesFilter(),cb,q,r,preds,securityContext);
 
 	}
 

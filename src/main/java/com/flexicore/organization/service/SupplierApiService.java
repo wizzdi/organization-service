@@ -80,36 +80,37 @@ public class SupplierApiService implements Plugin {
 	}
 
 	public PaginationResponse<SupplierApi> listAllSupplierApis(
-			SecurityContextBase securityContextBase, SupplierApiFiltering filtering) {
+			SecurityContextBase securityContext, SupplierApiFiltering filtering) {
 
 		List<SupplierApi> endpoints = repository.getAllSupplierApis(
-				securityContextBase, filtering);
+				securityContext, filtering);
 		long count = repository
-				.countAllSupplierApis(securityContextBase, filtering);
+				.countAllSupplierApis(securityContext, filtering);
 		return new PaginationResponse<>(endpoints, filtering, count);
 	}
 
 	
 	public List<SupplierApi> getAllSupplierApis(
-			SecurityContextBase securityContextBase, SupplierApiFiltering filtering) {
-		return repository.getAllSupplierApis(securityContextBase, filtering);
+			SecurityContextBase securityContext, SupplierApiFiltering filtering) {
+		return repository.getAllSupplierApis(securityContext, filtering);
 	}
 
 	
 	public SupplierApi createSupplierApi(SupplierApiCreate creationContainer,
-			SecurityContextBase securityContextBase) {
+			SecurityContextBase securityContext) {
 		SupplierApi SupplierApi = createSupplierApiNoMerge(creationContainer,
-				securityContextBase);
+				securityContext);
 		repository.merge(SupplierApi);
 		return SupplierApi;
 	}
 
 	
 	public SupplierApi createSupplierApiNoMerge(
-			SupplierApiCreate creationContainer, SecurityContextBase securityContextBase) {
+			SupplierApiCreate creationContainer, SecurityContextBase securityContext) {
 		SupplierApi supplierApi = new SupplierApi();
+		supplierApi.setId(Baseclass.getBase64ID());
 		updateSupplierApiNoMerge(creationContainer, supplierApi);
-		BaseclassService.createSecurityObjectNoMerge(supplierApi, securityContextBase);
+		BaseclassService.createSecurityObjectNoMerge(supplierApi, securityContext);
 
 		return supplierApi;
 
@@ -117,7 +118,7 @@ public class SupplierApiService implements Plugin {
 
 	
 	public SupplierApi updateSupplierApi(SupplierApiUpdate creationContainer,
-			SecurityContextBase securityContextBase) {
+			SecurityContextBase securityContext) {
 		SupplierApi SupplierApi = creationContainer.getSupplierApi();
 		if (updateSupplierApiNoMerge(creationContainer, SupplierApi)) {
 			repository.merge(SupplierApi);
@@ -139,14 +140,14 @@ public class SupplierApiService implements Plugin {
 	}
 
 	public void validateFiltering(SupplierApiFiltering filtering,
-			SecurityContextBase securityContextBase) {
-		basicService.validate(filtering,securityContextBase);
+			SecurityContextBase securityContext) {
+		basicService.validate(filtering,securityContext);
 
 	}
 
 	
 	public void validateCreate(SupplierApiCreate creationContainer,
-			SecurityContextBase securityContextBase) {
+			SecurityContextBase securityContext) {
 		if (creationContainer.getName() == null
 				|| creationContainer.getName().isEmpty()) {
 			throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
@@ -154,7 +155,7 @@ public class SupplierApiService implements Plugin {
 		}
 		SupplierApiFiltering supplierApiFiltering = new SupplierApiFiltering();
 		supplierApiFiltering.setBasicPropertiesFilter(new BasicPropertiesFilter().setNameLike(creationContainer.getName()));
-		List<SupplierApi> supplierApis = getAllSupplierApis(securityContextBase,
+		List<SupplierApi> supplierApis = getAllSupplierApis(securityContext,
 				supplierApiFiltering);
 		if (!supplierApis.isEmpty()) {
 			throw new ResponseStatusException(HttpStatus.BAD_REQUEST,"SupplierApi with name "
@@ -165,14 +166,14 @@ public class SupplierApiService implements Plugin {
 
 	
 	public void validateUpdate(SupplierApiUpdate creationContainer,
-			SecurityContextBase securityContextBase) {
-		basicService.validate(creationContainer,securityContextBase);
+			SecurityContextBase securityContext) {
+		basicService.validate(creationContainer,securityContext);
 
 		if (creationContainer.getName() != null) {
 			SupplierApiFiltering supplierApiFiltering = new SupplierApiFiltering();
 			supplierApiFiltering.setBasicPropertiesFilter(new BasicPropertiesFilter().setNameLike(creationContainer.getName()));
 			List<SupplierApi> supplierApis = getAllSupplierApis(
-					securityContextBase, supplierApiFiltering)
+					securityContext, supplierApiFiltering)
 					.parallelStream()
 					.filter(f -> !f.getId().equals(
 							creationContainer.getSupplierApi().getId()))

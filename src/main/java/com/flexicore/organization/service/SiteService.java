@@ -79,10 +79,10 @@ public class SiteService implements Plugin {
 
 
 	public void validateFiltering(SiteFiltering filtering,
-								  SecurityContextBase securityContextBase) {
-		basicService.validate(filtering, securityContextBase);
+								  SecurityContextBase securityContext) {
+		basicService.validate(filtering, securityContext);
 		Set<String> addressIds = filtering.getAddressIds();
-		Map<String, Address> address = addressIds.isEmpty() ? new HashMap<>() : listByIds(Address.class, addressIds, Address_.security, securityContextBase).parallelStream().collect(Collectors.toMap(f -> f.getId(), f -> f));
+		Map<String, Address> address = addressIds.isEmpty() ? new HashMap<>() : listByIds(Address.class, addressIds, Address_.security, securityContext).parallelStream().collect(Collectors.toMap(f -> f.getId(), f -> f));
 		addressIds.removeAll(address.keySet());
 		if (!addressIds.isEmpty()) {
 			throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "No Address with ids " + addressIds);
@@ -92,31 +92,32 @@ public class SiteService implements Plugin {
 
 
 	public PaginationResponse<Site> getAllSites(
-			SecurityContextBase securityContextBase, SiteFiltering filtering) {
-		List<Site> list = listAllSites(securityContextBase, filtering);
-		long count = repository.countAllSites(securityContextBase, filtering);
+			SecurityContextBase securityContext, SiteFiltering filtering) {
+		List<Site> list = listAllSites(securityContext, filtering);
+		long count = repository.countAllSites(securityContext, filtering);
 		return new PaginationResponse<>(list, filtering, count);
 	}
 
 
-	public List<Site> listAllSites(SecurityContextBase securityContextBase,
+	public List<Site> listAllSites(SecurityContextBase securityContext,
 								   SiteFiltering filtering) {
-		return repository.getAllSites(securityContextBase, filtering);
+		return repository.getAllSites(securityContext, filtering);
 	}
 
 	public Site createSite(SiteCreate creationContainer,
-						   SecurityContextBase securityContextBase) {
-		Site site = createSiteNoMerge(creationContainer, securityContextBase);
+						   SecurityContextBase securityContext) {
+		Site site = createSiteNoMerge(creationContainer, securityContext);
 		repository.merge(site);
 		return site;
 	}
 
 
 	public Site createSiteNoMerge(SiteCreate creationContainer,
-								  SecurityContextBase securityContextBase) {
+								  SecurityContextBase securityContext) {
 		Site site = new Site();
+		site.setId(Baseclass.getBase64ID());
 		updateSiteNoMerge(site, creationContainer);
-		BaseclassService.createSecurityObjectNoMerge(site, securityContextBase);
+		BaseclassService.createSecurityObjectNoMerge(site, securityContext);
 
 		return site;
 	}
@@ -137,7 +138,7 @@ public class SiteService implements Plugin {
 		return update;
 	}
 
-	public Site updateSite(SiteUpdate updateContainer, SecurityContextBase securityContextBase) {
+	public Site updateSite(SiteUpdate updateContainer, SecurityContextBase securityContext) {
 		Site site = updateContainer.getSite();
 		if (updateSiteNoMerge(site, updateContainer)) {
 			repository.merge(site);
@@ -146,11 +147,11 @@ public class SiteService implements Plugin {
 	}
 
 
-	public void validate(SiteCreate creationContainer, SecurityContextBase securityContextBase) {
-		basicService.validate(creationContainer,securityContextBase);
+	public void validate(SiteCreate creationContainer, SecurityContextBase securityContext) {
+		basicService.validate(creationContainer,securityContext);
 		String addressId = creationContainer.getAddressId();
 		Address address = addressId == null ? null : getByIdOrNull(addressId,
-				Address.class, Address_.security, securityContextBase);
+				Address.class, Address_.security, securityContext);
 		if (address == null && addressId != null) {
 			throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "No Address with id " + addressId);
 		}

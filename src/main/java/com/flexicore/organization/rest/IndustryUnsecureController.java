@@ -15,14 +15,14 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 
 
 @OperationsInside
-@RequestMapping("plugins/UnsecureIndustry")
-
+@RequestMapping("/plugins/UnsecureIndustry")
 @Tag(name = "Industry Unsecure")
 @Extension
-@Component
+@RestController
 public class IndustryUnsecureController implements Plugin {
 
 
@@ -33,7 +33,7 @@ public class IndustryUnsecureController implements Plugin {
 
 	@Operation(summary = "getAllIndustries", description = "Lists all Industries")
 	@IOperation(Name = "getAllIndustries", Description = "Lists all Industries")
-	@PostMapping("getAllIndustries")
+	@PostMapping("/getAllIndustries")
 	public PaginationResponse<Industry> getAllIndustries(
 			@RequestBody IndustryFiltering filtering) {
 

@@ -4,6 +4,7 @@ import com.flexicore.annotations.IOperation;
 import com.flexicore.annotations.OperationsInside;
 
 
+import com.flexicore.organization.model.OrganizationalCustomer_;
 import com.wizzdi.flexicore.security.response.PaginationResponse;
 import com.wizzdi.flexicore.boot.base.interfaces.Plugin;
 import com.flexicore.organization.model.OrganizationalCustomer;
@@ -27,12 +28,10 @@ import org.springframework.http.HttpStatus;
 
 
 @OperationsInside
-
-@RequestMapping("plugins/OrganizationalCustomer")
-
+@RequestMapping("/plugins/OrganizationalCustomer")
 @Tag(name = "OrganizationalCustomer")
 @Extension
-@Component
+@RestController
 public class OrganizationalCustomerController implements Plugin {
 
 
@@ -42,12 +41,12 @@ public class OrganizationalCustomerController implements Plugin {
 
 	@Operation(summary = "getAllOrganizationalCustomers", description = "Lists all OrganizationalCustomers")
 	@IOperation(Name = "getAllOrganizationalCustomers", Description = "Lists all OrganizationalCustomers")
-	@PostMapping("getAllOrganizationalCustomers")
+	@PostMapping("/getAllOrganizationalCustomers")
 	public PaginationResponse<OrganizationalCustomer> getAllOrganizationalCustomers(
 
-			@RequestBody OrganizationalCustomerFiltering filtering, @RequestAttribute SecurityContextBase securityContextBase) {
-		service.validateFiltering(filtering, securityContextBase);
-		return service.getAllOrganizationalCustomers(securityContextBase, filtering);
+			@RequestBody OrganizationalCustomerFiltering filtering, @RequestAttribute SecurityContextBase securityContext) {
+		service.validateFiltering(filtering, securityContext);
+		return service.getAllOrganizationalCustomers(securityContext, filtering);
 	}
 
 
@@ -57,10 +56,10 @@ public class OrganizationalCustomerController implements Plugin {
 	public OrganizationalCustomer createOrganizationalCustomer(
 
 			@RequestBody OrganizationalCustomerCreate creationContainer,
-			@RequestAttribute SecurityContextBase securityContextBase) {
-		service.validate(creationContainer, securityContextBase);
+			@RequestAttribute SecurityContextBase securityContext) {
+		service.validate(creationContainer, securityContext);
 
-		return service.createOrganizationalCustomer(creationContainer, securityContextBase);
+		return service.createOrganizationalCustomer(creationContainer, securityContext);
 	}
 
 
@@ -70,16 +69,16 @@ public class OrganizationalCustomerController implements Plugin {
 	public OrganizationalCustomer updateOrganizationalCustomer(
 
 			@RequestBody OrganizationalCustomerUpdate updateContainer,
-			@RequestAttribute SecurityContextBase securityContextBase) {
-		service.validate(updateContainer, securityContextBase);
+			@RequestAttribute SecurityContextBase securityContext) {
+		service.validate(updateContainer, securityContext);
 		OrganizationalCustomer organizationalCustomer = service.getByIdOrNull(updateContainer.getId(),
-				OrganizationalCustomer.class, null, securityContextBase);
+				OrganizationalCustomer.class, OrganizationalCustomer_.security, securityContext);
 		if (organizationalCustomer == null) {
 			throw new ResponseStatusException(HttpStatus.BAD_REQUEST,"no OrganizationalCustomer with id "
 					+ updateContainer.getId());
 		}
 		updateContainer.setOrganizationalCustomer(organizationalCustomer);
 
-		return service.updateOrganizationalCustomer(updateContainer, securityContextBase);
+		return service.updateOrganizationalCustomer(updateContainer, securityContext);
 	}
 }

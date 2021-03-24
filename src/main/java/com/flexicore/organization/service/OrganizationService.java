@@ -76,10 +76,10 @@ public class OrganizationService implements Plugin {
 
 	public Organization createOrganization(
 			OrganizationCreate creationContainer,
-			SecurityContextBase securityContextBase) {
+			SecurityContextBase securityContext) {
 
 		Organization employee = createOrganizationNoMerge(creationContainer,
-				securityContextBase);
+				securityContext);
 		repository.merge(employee);
 		return employee;
 	}
@@ -87,10 +87,12 @@ public class OrganizationService implements Plugin {
 	
 	public Organization createOrganizationNoMerge(
 			OrganizationCreate creationContainer,
-			SecurityContextBase securityContextBase) {
+			SecurityContextBase securityContext) {
 		Organization organization = new Organization();
+		organization.setId(Baseclass.getBase64ID());
+
 		updateOrganizationNoMerge(organization, creationContainer);
-		BaseclassService.createSecurityObjectNoMerge(organization, securityContextBase);
+		BaseclassService.createSecurityObjectNoMerge(organization, securityContext);
 		return organization;
 
 	}
@@ -106,14 +108,14 @@ public class OrganizationService implements Plugin {
 		return update;
 	}
 
-	public void validate(OrganizationCreate organizationCreate,SecurityContextBase securityContextBase){
-		basicService.validate(organizationCreate,securityContextBase);
+	public void validate(OrganizationCreate organizationCreate,SecurityContextBase securityContext){
+		basicService.validate(organizationCreate,securityContext);
 	}
 
 	
 	public void validateFiltering(OrganizationFiltering filtering,
-			SecurityContextBase securityContextBase) {
-		basicService.validate(filtering,securityContextBase);
+			SecurityContextBase securityContext) {
+		basicService.validate(filtering,securityContext);
 	}
 
 }
