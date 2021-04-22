@@ -39,7 +39,7 @@ public class IndustryRepository implements Plugin {
 		Root<Industry> r = q.from(Industry.class);
 		List<Predicate> preds = new ArrayList<>();
 		addIndustryPredicates(filtering, cb,q, r, preds,securityContext);
-		q.select(r).where(preds.toArray(Predicate[]::new));
+		q.select(r).where(preds.toArray(Predicate[]::new)).orderBy(cb.asc(r.get(Industry_.name)));
 		TypedQuery<Industry> query = em.createQuery(q);
 		BasicRepository.addPagination(filtering, query);
 		return query.getResultList();
