@@ -2,7 +2,7 @@
   <modelVersion>4.0.0</modelVersion>
   <groupId>com.wizzdi</groupId>
   <artifactId>organization-service</artifactId>
-  <version>3.0.0</version>
+  <version>3.0.1-SNAPSHOT</version>
   <name>organization-service</name>
   <description>FlexiCore service plugin , managing organizations</description>
   <url>https://wizzdi.com</url>
@@ -58,7 +58,7 @@
     <connection>scm:git:git://wizzdi/organization-service.git</connection>
     <developerConnection>scm:git:git@github.com:wizzdi/organization-service.git</developerConnection>
     <url>https://github.com/wizzdi/organization-service</url>
-    <tag>organization-service-3.0.0</tag>
+    <tag>organization-service-{version}</tag>
   </scm>
   <dependencyManagement>
     <dependencies>
