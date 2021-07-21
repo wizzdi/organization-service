@@ -25,6 +25,8 @@
     <version.surefire.plugin>2.16</version.surefire.plugin>
     <pf4j-spring.version>0.7.0</pf4j-spring.version>
     <swagger.version>2.0.8</swagger.version>
+    <flexicore-boot-dependencies.version>2.1.0</flexicore-boot-dependencies.version>
+    <spring-boot-dependencies.version>2.5.2</spring-boot-dependencies.version>
   </properties>
   <distributionManagement>
     <snapshotRepository>
@@ -63,14 +65,14 @@
       <dependency>
         <groupId>org.springframework.boot</groupId>
         <artifactId>spring-boot-dependencies</artifactId>
-        <version>2.3.0.RELEASE</version>
+        <version>${spring-boot-dependencies.version}</version>
         <type>pom</type>
         <scope>import</scope>
       </dependency>
       <dependency>
         <groupId>com.wizzdi</groupId>
         <artifactId>flexicore-boot-dependencies</artifactId>
-        <version>2.0.6</version>
+        <version>${flexicore-boot-dependencies.version}</version>
         <type>pom</type>
         <scope>import</scope>
       </dependency>
@@ -91,7 +93,7 @@
     <dependency>
       <groupId>com.wizzdi</groupId>
       <artifactId>organization-model</artifactId>
-      <version>3.0.0-SNAPSHOT</version>
+      <version>3.0.0</version>
       <scope>provided</scope>
     </dependency>
     <dependency>
@@ -107,7 +109,7 @@
     <dependency>
       <groupId>com.wizzdi</groupId>
       <artifactId>flexicore-territories-model</artifactId>
-      <version>3.0.0-SNAPSHOT</version>
+      <version>3.0.0</version>
       <scope>provided</scope>
     </dependency>
     <dependency>
