@@ -25,7 +25,7 @@
     <version.surefire.plugin>2.16</version.surefire.plugin>
     <pf4j-spring.version>0.7.0</pf4j-spring.version>
     <swagger.version>2.0.8</swagger.version>
-    <flexicore-boot-dependencies.version>2.1.0</flexicore-boot-dependencies.version>
+    <flexicore-boot-dependencies.version>2.1.1</flexicore-boot-dependencies.version>
     <spring-boot-dependencies.version>2.5.2</spring-boot-dependencies.version>
   </properties>
   <distributionManagement>

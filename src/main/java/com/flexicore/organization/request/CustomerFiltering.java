@@ -1,6 +1,7 @@
 package com.flexicore.organization.request;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.flexicore.annotations.TypeRetention;
 import com.wizzdi.flexicore.security.request.BasicPropertiesFilter;
 import com.wizzdi.flexicore.security.request.PaginationFilter;
 import com.flexicore.model.SecurityUser;
@@ -16,6 +17,7 @@ public class CustomerFiltering extends PaginationFilter {
 
     private Set<String> externalIds;
     @JsonIgnore
+    @TypeRetention(SecurityUser.class)
     private List<SecurityUser> users;
 
     public BasicPropertiesFilter getBasicPropertiesFilter() {

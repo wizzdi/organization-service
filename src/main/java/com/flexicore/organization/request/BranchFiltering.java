@@ -1,6 +1,7 @@
 package com.flexicore.organization.request;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.flexicore.annotations.TypeRetention;
 import com.flexicore.organization.model.Organization;
 
 import java.util.HashSet;
@@ -11,6 +12,7 @@ public class BranchFiltering extends SiteFiltering {
 
 	private Set<String> organizationIds = new HashSet<>();
 	@JsonIgnore
+	@TypeRetention(Organization.class)
 	private List<Organization> organizations;
 
 	public Set<String> getOrganizationIds() {

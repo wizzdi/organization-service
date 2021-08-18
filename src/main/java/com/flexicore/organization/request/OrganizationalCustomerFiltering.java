@@ -1,6 +1,7 @@
 package com.flexicore.organization.request;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.flexicore.annotations.TypeRetention;
 import com.flexicore.model.SecurityUser;
 import com.flexicore.organization.model.Organization;
 
@@ -12,6 +13,7 @@ public class OrganizationalCustomerFiltering extends CustomerFiltering {
 
     private Set<String> organizationIds=new HashSet<>();
     @JsonIgnore
+    @TypeRetention(Organization.class)
     private List<Organization> organizations;
 
 
