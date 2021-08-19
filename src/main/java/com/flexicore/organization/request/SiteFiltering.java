@@ -1,6 +1,7 @@
 package com.flexicore.organization.request;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.flexicore.annotations.TypeRetention;
 import com.flexicore.model.territories.Address;
 import com.wizzdi.flexicore.security.request.BasicPropertiesFilter;
 import com.wizzdi.flexicore.security.request.PaginationFilter;
@@ -16,6 +17,7 @@ public class SiteFiltering extends PaginationFilter {
 
 	private Set<String> addressIds = new HashSet<>();
 	@JsonIgnore
+	@TypeRetention(Address.class)
 	private List<Address> addresses;
 
 	private Set<String> externalIds = new HashSet<>();
