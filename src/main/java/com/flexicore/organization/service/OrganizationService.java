@@ -3,18 +3,26 @@ package com.flexicore.organization.service;
 
 import com.flexicore.model.Baseclass;
 import com.flexicore.model.Basic;
+import com.flexicore.model.SecuredBasic_;
+import com.flexicore.model.territories.Address;
 import com.flexicore.organization.data.OrganizationRepository;
 import com.flexicore.organization.model.Organization;
+import com.flexicore.organization.model.Organization;
+import com.flexicore.organization.request.OrganizationFiltering;
+import com.flexicore.organization.request.OrganizationUpdate;
 import com.flexicore.organization.request.OrganizationCreate;
 import com.flexicore.organization.request.OrganizationFiltering;
 import com.flexicore.security.SecurityContextBase;
 import com.wizzdi.flexicore.boot.base.interfaces.Plugin;
+import com.wizzdi.flexicore.security.response.PaginationResponse;
 import com.wizzdi.flexicore.security.service.BaseclassService;
 import com.wizzdi.flexicore.security.service.BasicService;
 import org.pf4j.Extension;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.server.ResponseStatusException;
 
 import javax.persistence.metamodel.SingularAttribute;
 import java.util.List;
@@ -110,6 +118,12 @@ public class OrganizationService implements Plugin {
 
 	public void validate(OrganizationCreate organizationCreate,SecurityContextBase securityContext){
 		basicService.validate(organizationCreate,securityContext);
+		String addressId=organizationCreate.getMainAddressId();
+		Address address=addressId!=null?getByIdOrNull(addressId,Address.class, SecuredBasic_.security,securityContext):null;
+		if(addressId!=null&&address==null){
+			throw new ResponseStatusException(HttpStatus.BAD_REQUEST,"no address with id "+addressId);
+		}
+		organizationCreate.setMainAddress(address);
 	}
 
 	
@@ -117,5 +131,22 @@ public class OrganizationService implements Plugin {
 			SecurityContextBase securityContext) {
 		basicService.validate(filtering,securityContext);
 	}
+
+	public PaginationResponse<Organization> getAllOrganizations(SecurityContextBase securityContext, OrganizationFiltering filtering) {
+		List<Organization> list = repository.getAllOrganizations(securityContext, filtering);
+		long count = repository.countAllOrganizations(securityContext, filtering);
+		return new PaginationResponse<>(list, filtering, count);
+	}
+
+	public Organization updateOrganization(OrganizationUpdate updateContainer,
+								   SecurityContextBase securityContext) {
+		Organization organization = updateContainer.getOrganization();
+		if (updateOrganizationNoMerge(organization, updateContainer)) {
+			repository.merge(organization);
+		}
+		return organization;
+	}
+
+
 
 }
