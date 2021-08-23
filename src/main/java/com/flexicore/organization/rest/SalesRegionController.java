@@ -43,7 +43,7 @@ public class SalesRegionController implements Plugin {
 	@PostMapping("/getAllSalesRegions")
 	public PaginationResponse<SalesRegion> getAllSalesRegions(
 
-			@RequestBody SalesRegionFiltering filtering,
+			@RequestHeader("authenticationKey") String authenticationKey,@RequestBody SalesRegionFiltering filtering,
 			@RequestAttribute SecurityContextBase securityContext) {
 		service.validateFiltering(filtering, securityContext);
 		return service.getAllSalesRegions(securityContext, filtering);
@@ -55,7 +55,7 @@ public class SalesRegionController implements Plugin {
 	@IOperation(Name = "createSalesRegion", Description = "Creates SalesRegion")
 	public SalesRegion createSalesRegion(
 
-			@RequestBody SalesRegionCreate creationContainer,
+			@RequestHeader("authenticationKey") String authenticationKey,@RequestBody SalesRegionCreate creationContainer,
 			@RequestAttribute SecurityContextBase securityContext) {
 
 		return service.createSalesRegion(creationContainer, securityContext);
@@ -67,7 +67,7 @@ public class SalesRegionController implements Plugin {
 	@IOperation(Name = "updateSalesRegion", Description = "Updates SalesRegion")
 	public SalesRegion updateSalesRegion(
 
-			@RequestBody SalesRegionUpdate updateContainer,
+			@RequestHeader("authenticationKey") String authenticationKey,@RequestBody SalesRegionUpdate updateContainer,
 			@RequestAttribute SecurityContextBase securityContext) {
 		SalesRegion salesRegion = service.getByIdOrNull(
 				updateContainer.getId(), SalesRegion.class, SalesRegion_.security,

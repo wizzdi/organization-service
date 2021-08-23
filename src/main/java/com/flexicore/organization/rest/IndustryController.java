@@ -44,7 +44,7 @@ public class IndustryController implements Plugin {
 	@PostMapping("/getAllIndustries")
 	public PaginationResponse<Industry> getAllIndustries(
 
-			@RequestBody IndustryFiltering filtering, @RequestAttribute SecurityContextBase securityContext) {
+			@RequestHeader("authenticationKey") String authenticationKey,@RequestBody IndustryFiltering filtering, @RequestAttribute SecurityContextBase securityContext) {
 		service.validateFiltering(filtering, securityContext);
 		return service.getAllIndustries(securityContext, filtering);
 	}
@@ -55,7 +55,7 @@ public class IndustryController implements Plugin {
 	@IOperation(Name = "createIndustry", Description = "Creates Industry")
 	public Industry createIndustry(
 
-			@RequestBody IndustryCreate creationContainer,
+			@RequestHeader("authenticationKey") String authenticationKey,@RequestBody IndustryCreate creationContainer,
 			@RequestAttribute SecurityContextBase securityContext) {
 		service.validate(creationContainer, securityContext);
 
@@ -68,7 +68,7 @@ public class IndustryController implements Plugin {
 	@IOperation(Name = "updateIndustry", Description = "Updates Industry")
 	public Industry updateIndustry(
 
-			@RequestBody IndustryUpdate updateContainer,
+			@RequestHeader("authenticationKey") String authenticationKey,@RequestBody IndustryUpdate updateContainer,
 			@RequestAttribute SecurityContextBase securityContext) {
 		service.validate(updateContainer, securityContext);
 		Industry industry = service.getByIdOrNull(updateContainer.getId(),

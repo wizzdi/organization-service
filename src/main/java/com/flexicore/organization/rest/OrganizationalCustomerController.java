@@ -44,7 +44,7 @@ public class OrganizationalCustomerController implements Plugin {
 	@PostMapping("/getAllOrganizationalCustomers")
 	public PaginationResponse<OrganizationalCustomer> getAllOrganizationalCustomers(
 
-			@RequestBody OrganizationalCustomerFiltering filtering, @RequestAttribute SecurityContextBase securityContext) {
+			@RequestHeader("authenticationKey") String authenticationKey,@RequestBody OrganizationalCustomerFiltering filtering, @RequestAttribute SecurityContextBase securityContext) {
 		service.validateFiltering(filtering, securityContext);
 		return service.getAllOrganizationalCustomers(securityContext, filtering);
 	}
@@ -55,7 +55,7 @@ public class OrganizationalCustomerController implements Plugin {
 	@IOperation(Name = "createOrganizationalCustomer", Description = "Creates OrganizationalCustomer")
 	public OrganizationalCustomer createOrganizationalCustomer(
 
-			@RequestBody OrganizationalCustomerCreate creationContainer,
+			@RequestHeader("authenticationKey") String authenticationKey,@RequestBody OrganizationalCustomerCreate creationContainer,
 			@RequestAttribute SecurityContextBase securityContext) {
 		service.validate(creationContainer, securityContext);
 
@@ -68,7 +68,7 @@ public class OrganizationalCustomerController implements Plugin {
 	@IOperation(Name = "updateOrganizationalCustomer", Description = "Updates OrganizationalCustomer")
 	public OrganizationalCustomer updateOrganizationalCustomer(
 
-			@RequestBody OrganizationalCustomerUpdate updateContainer,
+			@RequestHeader("authenticationKey") String authenticationKey,@RequestBody OrganizationalCustomerUpdate updateContainer,
 			@RequestAttribute SecurityContextBase securityContext) {
 		service.validate(updateContainer, securityContext);
 		OrganizationalCustomer organizationalCustomer = service.getByIdOrNull(updateContainer.getId(),

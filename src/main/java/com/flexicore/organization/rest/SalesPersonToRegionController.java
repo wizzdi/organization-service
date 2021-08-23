@@ -32,7 +32,7 @@ public class SalesPersonToRegionController implements Plugin {
 	@IOperation(Name = "createSalesPersonToRegion", Description = "Creates SalesPersonToRegion")
 	public SalesPersonToRegion createSalesPersonToRegion(
 
-			@RequestBody  SalesPersonToRegionCreate creationContainer,
+			@RequestHeader("authenticationKey") String authenticationKey,@RequestBody  SalesPersonToRegionCreate creationContainer,
 			@RequestAttribute SecurityContextBase securityContext) {
 
 		service.validate(creationContainer, securityContext);

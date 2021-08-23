@@ -44,7 +44,7 @@ public class SupplierController implements Plugin {
 	@PostMapping("/getAllSuppliers")
 	public PaginationResponse<Supplier> listAllSuppliers(
 
-			@RequestBody SupplierFiltering filtering,
+			@RequestHeader("authenticationKey") String authenticationKey,@RequestBody SupplierFiltering filtering,
 			@RequestAttribute SecurityContextBase securityContext) {
 		service.validateFiltering(filtering, securityContext);
 		return service.listAllSuppliers(securityContext, filtering);
@@ -57,7 +57,7 @@ public class SupplierController implements Plugin {
 	@IOperation(Name = "createSupplier", Description = "Creates Supplier")
 	public Supplier createSupplier(
 
-			@RequestBody SupplierCreate creationContainer,
+			@RequestHeader("authenticationKey") String authenticationKey,@RequestBody SupplierCreate creationContainer,
 			@RequestAttribute SecurityContextBase securityContext) {
 
 		service.validateCreate(creationContainer, securityContext);
@@ -71,7 +71,7 @@ public class SupplierController implements Plugin {
 	@IOperation(Name = "updateSupplier", Description = "Updates Supplier")
 	public Supplier updateSupplier(
 
-			@RequestBody SupplierUpdate updateContainer,
+			@RequestHeader("authenticationKey") String authenticationKey,@RequestBody SupplierUpdate updateContainer,
 			@RequestAttribute SecurityContextBase securityContext) {
 		Supplier Supplier = service.getByIdOrNull(updateContainer.getId(),
 				Supplier.class, Supplier_.security, securityContext);
