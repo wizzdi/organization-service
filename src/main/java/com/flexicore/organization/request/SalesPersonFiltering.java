@@ -1,6 +1,8 @@
 package com.flexicore.organization.request;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.flexicore.annotations.TypeRetention;
+import com.flexicore.organization.model.Organization;
 import com.flexicore.organization.model.SalesRegion;
 
 import java.util.HashSet;
@@ -11,6 +13,7 @@ public class SalesPersonFiltering extends EmployeeFiltering {
 
 	private Set<String> regionIds = new HashSet<>();
 	@JsonIgnore
+	@TypeRetention(SalesRegion.class)
 	private List<SalesRegion> salesRegions;
 
 	public Set<String> getRegionIds() {
