@@ -106,7 +106,7 @@ public class BranchService implements Plugin {
 			SecurityContextBase securityContext) {
 		siteService.validate(creationContainer, securityContext);
 		String organizationId = creationContainer.getOrganizationId();
-		Organization organization = organizationId == null ? null : getByIdOrNull(organizationId, Organization.class, null, securityContext);
+		Organization organization = organizationId == null ? null : getByIdOrNull(organizationId, Organization.class, SecuredBasic_.security, securityContext);
 		if (organization == null && organizationId != null) {
 			throw new ResponseStatusException(HttpStatus.BAD_REQUEST,"No Organization with id " + organizationId);
 		}
