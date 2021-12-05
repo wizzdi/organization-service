@@ -107,6 +107,7 @@
             <artifactId>flexicore-boot-starter-web</artifactId>
             <scope>provided</scope>
         </dependency>
+
         <dependency>
             <groupId>com.wizzdi</groupId>
             <artifactId>flexicore-territories-model</artifactId>

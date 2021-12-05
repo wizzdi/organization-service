@@ -2,6 +2,7 @@ package com.flexicore.organization;
 
 import com.flexicore.organization.app.App;
 import com.flexicore.organization.model.Employee;
+import com.flexicore.organization.model.Organization;
 import com.flexicore.organization.request.EmployeeCreate;
 import com.flexicore.organization.request.EmployeeFiltering;
 import com.flexicore.organization.request.EmployeeUpdate;
@@ -33,6 +34,8 @@ public class EmployeeControllerTest {
     private Employee employee;
     @Autowired
     private TestRestTemplate restTemplate;
+    @Autowired
+    private Organization organization;
 
     @BeforeAll
     private void init() {
@@ -50,6 +53,7 @@ public class EmployeeControllerTest {
     public void testEmployeeCreate() {
         String name = UUID.randomUUID().toString();
         EmployeeCreate request = new EmployeeCreate()
+                .setOrganizationId(organization.getId())
                 .setName(name);
         ResponseEntity<Employee> employeeResponse = this.restTemplate.postForEntity("/plugins/Employee/createEmployee", request, Employee.class);
         Assertions.assertEquals(200, employeeResponse.getStatusCodeValue());
@@ -78,7 +82,13 @@ public class EmployeeControllerTest {
 
     public void assertEmployee(EmployeeCreate request, Employee employee) {
         Assertions.assertNotNull(employee);
-        Assertions.assertEquals(request.getName(), employee.getName());
+        if(request.getName()!=null){
+            Assertions.assertEquals(request.getName(), employee.getName());
+        }
+        if(request.getOrganizationId()!=null){
+            Assertions.assertEquals(request.getOrganizationId(), employee.getOrganization().getId());
+
+        }
     }
 
     @Test

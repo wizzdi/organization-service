@@ -3,6 +3,9 @@ package com.flexicore.organization.data;
 import com.flexicore.model.Baseclass;
 import com.flexicore.model.Basic;
 import com.flexicore.organization.model.Employee;
+import com.flexicore.organization.model.Employee_;
+import com.flexicore.organization.model.Organization;
+import com.flexicore.organization.model.Organization_;
 import com.flexicore.organization.request.EmployeeFiltering;
 import com.flexicore.security.SecurityContextBase;
 import com.wizzdi.flexicore.boot.base.interfaces.Plugin;
@@ -21,6 +24,7 @@ import javax.persistence.metamodel.SingularAttribute;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 
 @Extension
@@ -47,6 +51,11 @@ public class EmployeeRepository implements Plugin {
 	public <T extends Employee> void addEmployeePredicates(EmployeeFiltering filtering, CriteriaBuilder cb, CommonAbstractCriteria q, From<?,T> r, List<Predicate> preds, SecurityContextBase securityContext) {
 
 		securedBasicRepository.addSecuredBasicPredicates(filtering.getBasicPropertiesFilter(),cb,q,r,preds,securityContext);
+		if(filtering.getOrganizations()!=null&&!filtering.getOrganizations().isEmpty()){
+			Set<String> ids=filtering.getOrganizations().stream().map(f->f.getId()).collect(Collectors.toSet());
+			Join<T, Organization> join=r.join(Employee_.organization);
+			preds.add(join.get(Organization_.id).in(ids));
+		}
 	}
 
 	public Long countAllEmployees(SecurityContextBase securityContext,

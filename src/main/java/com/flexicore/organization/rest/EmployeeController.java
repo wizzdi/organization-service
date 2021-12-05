@@ -59,7 +59,7 @@ public class EmployeeController implements Plugin {
 
 			@RequestHeader("authenticationKey") String authenticationKey,@RequestBody EmployeeCreate creationContainer,
 			@RequestAttribute SecurityContextBase securityContext) {
-
+		service.validate(creationContainer,securityContext);
 		return service.createEmployee(creationContainer, securityContext);
 	}
 
