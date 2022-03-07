@@ -13,6 +13,10 @@ public class EmployeeFiltering extends PaginationFilter {
 
 	private BasicPropertiesFilter basicPropertiesFilter;
 	private Set<String> organizationsIds=new HashSet<>();
+	private Set<String> externalIds=new HashSet<>();
+	private Set<String> externalId2s =new HashSet<>();
+	private Boolean organizationAdmin;
+
 	@JsonIgnore
 	private List<Organization> organizations;
 
@@ -42,5 +46,33 @@ public class EmployeeFiltering extends PaginationFilter {
 	public <T extends EmployeeFiltering> T setOrganizations(List<Organization> organizations) {
 		this.organizations = organizations;
 		return (T) this;
+	}
+
+	public Set<String> getExternalIds() {
+		return externalIds;
+	}
+
+	public EmployeeFiltering setExternalIds(Set<String> externalIds) {
+		this.externalIds = externalIds;
+		return this;
+
+	}
+
+	public Boolean getOrganizationAdmin() {
+		return organizationAdmin;
+	}
+
+	public EmployeeFiltering setOrganizationAdmin(Boolean organizationAdmin) {
+		this.organizationAdmin = organizationAdmin;
+		return this;
+	}
+
+	public Set<String> getExternalId2s() {
+		return externalId2s;
+	}
+
+	public EmployeeFiltering setExternalId2s(Set<String> externalId2s) {
+		this.externalId2s = externalId2s;
+		return this;
 	}
 }

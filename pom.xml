@@ -3,7 +3,7 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>com.wizzdi</groupId>
     <artifactId>organization-service</artifactId>
-    <version>3.0.4-SNAPSHOT</version>
+    <version>3.0.4</version>
     <name>organization-service</name>
     <description>FlexiCore service plugin , managing organizations</description>
     <url>https://wizzdi.com</url>
@@ -94,7 +94,7 @@
         <dependency>
             <groupId>com.wizzdi</groupId>
             <artifactId>organization-model</artifactId>
-            <version>3.0.1</version>
+            <version>3.0.4</version>
             <scope>provided</scope>
         </dependency>
         <dependency>

@@ -44,7 +44,7 @@ public class OrganizationController implements Plugin {
 
 
 	@PostMapping("/createOrganization")
-	@Operation(summary = "createOrganization", description = "Creates Organization")
+	@Operation(summary = "create Organization , a Permission group creation is optional")
 	@IOperation(Name = "createOrganization", Description = "Creates Organization")
 	public Organization createOrganization(
 

@@ -37,6 +37,9 @@ public class OrganizationRepository implements Plugin {
 
 	public <T extends Organization> void addOrganizationPredicates(OrganizationFiltering filtering, CriteriaBuilder cb, CommonAbstractCriteria q, From<?,T> r, List<Predicate> preds, SecurityContextBase securityContext) {
 		securedBasicRepository.addSecuredBasicPredicates(filtering.getBasicPropertiesFilter(),cb,q,r,preds,securityContext);
+		if (filtering.getExternalIds()!=null && !filtering.getExternalIds().isEmpty()) {
+			preds.add(r.get(Organization_.externalId).in(filtering.getExternalIds()));
+		}
 
 	}
 
