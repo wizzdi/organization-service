@@ -129,6 +129,10 @@ public class EmployeeService implements Plugin {
 			employee.setOrganization(employeeCreate.getOrganization());
 			update=true;
 		}
+		if(employeeCreate.getExternalId()!=null&&(employee.getExternalId()==null||!employeeCreate.getExternalId().equals(employee.getExternalId()))){
+			employee.setExternalId(employeeCreate.getExternalId());
+			update=true;
+		}
 		return update;
 	}
 

@@ -15,6 +15,16 @@ public class EmployeeFiltering extends PaginationFilter {
 	private Set<String> organizationsIds=new HashSet<>();
 	@JsonIgnore
 	private List<Organization> organizations;
+	private Set<String> externalIds;
+
+	public Set<String> getExternalIds() {
+		return externalIds;
+	}
+
+	public EmployeeFiltering setExternalIds(Set<String> externalIds) {
+		this.externalIds = externalIds;
+		return this;
+	}
 
 	public BasicPropertiesFilter getBasicPropertiesFilter() {
 		return basicPropertiesFilter;

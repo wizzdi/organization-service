@@ -56,6 +56,9 @@ public class EmployeeRepository implements Plugin {
 			Join<T, Organization> join=r.join(Employee_.organization);
 			preds.add(join.get(Organization_.id).in(ids));
 		}
+		if (filtering.getExternalIds()!=null &&!filtering.getExternalIds().isEmpty()){
+			preds.add(r.get(Employee_.externalId).in(filtering.getExternalIds()));
+		}
 	}
 
 	public Long countAllEmployees(SecurityContextBase securityContext,
