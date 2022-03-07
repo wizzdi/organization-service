@@ -10,7 +10,7 @@ public class EmployeeCreate extends BasicCreate {
     @JsonIgnore
     private Organization organization;
     private String organizationId;
-
+    private String externalId;
     @JsonIgnore
     public Organization getOrganization() {
         return organization;
@@ -28,5 +28,14 @@ public class EmployeeCreate extends BasicCreate {
     public <T extends EmployeeCreate> T setOrganizationId(String organizationId) {
         this.organizationId = organizationId;
         return (T) this;
+    }
+
+    public String getExternalId() {
+        return externalId;
+    }
+
+    public EmployeeCreate setExternalId(String externalId) {
+        this.externalId = externalId;
+        return this;
     }
 }
