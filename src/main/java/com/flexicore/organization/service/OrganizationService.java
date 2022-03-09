@@ -113,6 +113,10 @@ public class OrganizationService implements Plugin {
 			organization.setMainAddress(organizationCreate.getMainAddress());
 			update=true;
 		}
+		if(organizationCreate.getExternalId()!=null&& (organization.getExternalId()==null||!organizationCreate.getExternalId().equals(organization.getExternalId()))){
+			organization.setExternalId(organizationCreate.getExternalId());
+			update=true;
+		}
 		return update;
 	}
 
