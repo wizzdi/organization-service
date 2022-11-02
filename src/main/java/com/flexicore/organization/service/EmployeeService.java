@@ -16,6 +16,7 @@ import com.wizzdi.flexicore.boot.base.interfaces.Plugin;
 import com.wizzdi.flexicore.security.response.PaginationResponse;
 import com.wizzdi.flexicore.security.service.BaseclassService;
 import com.wizzdi.flexicore.security.service.BasicService;
+import org.aspectj.weaver.ast.Or;
 import org.pf4j.Extension;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -139,14 +140,21 @@ public class EmployeeService implements Plugin {
 	public void validateFiltering(EmployeeFiltering filtering,
 			SecurityContextBase securityContext) {
 		basicService.validate(filtering,securityContext);
-		Set<String> organizationIds=filtering.getOrganizationsIds();
-		Map<String, Organization> map=organizationIds.isEmpty()?new HashMap<>():listByIds(Organization.class,organizationIds, SecuredBasic_.security,securityContext).stream().collect(Collectors.toMap(f->f.getId(),f->f));
-		organizationIds.remove(map.keySet());
-		if(!organizationIds.isEmpty()){
-			throw new ResponseStatusException(HttpStatus.BAD_REQUEST,"no organizations with ids "+organizationIds);
-		}
-		filtering.setOrganizations(new ArrayList<>(map.values()));
 
+		Set<String> ids =
+				filtering.getOrganizationsIds() == null ? new HashSet<>() : filtering.getOrganizationsIds();
+		Map<String, Organization> organizationMap =
+				ids.isEmpty()
+						? new HashMap<>()
+						: repository
+						.listByIds(Organization.class, ids, SecuredBasic_.security, securityContext)
+						.parallelStream()
+						.collect(Collectors.toMap(f -> f.getId(), f -> f));
+		ids.removeAll(organizationMap.keySet());
+		if (!ids.isEmpty()) {
+			throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "No Car with ids " + ids);
+		}
+		filtering.setOrganizations(new ArrayList<>(organizationMap.values()));
 
 	}
 

@@ -41,6 +41,7 @@ public class OrganizationRepository implements Plugin {
 			preds.add(r.get(Organization_.externalId).in(filtering.getExternalIds()));
 		}
 
+
 	}
 
 	public List<Organization> getAllOrganizations(SecurityContextBase securityContext,
