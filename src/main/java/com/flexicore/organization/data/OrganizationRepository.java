@@ -40,10 +40,30 @@ public class OrganizationRepository implements Plugin {
 		if (filtering.getExternalIds()!=null &&!filtering.getExternalIds().isEmpty()){
 			preds.add(r.get(Organization_.externalId).in(filtering.getExternalIds()));
 		}
+		if (filtering.getOrganizationNameLike()!=null && ! filtering.getOrganizationNameLike().isEmpty()) {
+			filtering.setOrganizationNameLike(addLike(filtering.getOrganizationNameLike()));
+			preds.add(cb.like(r.get(Organization_.name),filtering.getOrganizationNameLike()));
+		}
+		if (filtering.getEmployeeNameLike() !=null && !filtering.getEmployeeNameLike().isEmpty()) {
+			filtering.setEmployeeNameLike(addLike(filtering.getEmployeeNameLike()));
+			ListJoin<T, Employee> join = r.join(Organization_.employees);
+			preds.add(cb.like(join.get(Employee_.name),filtering.getEmployeeNameLike()));
+		}
 
 
 	}
-
+	private String addLike(String add) {
+		StringBuilder result=new StringBuilder();
+		if (!add.startsWith("%")) result.append("%").append(add);
+		if (!add.endsWith("%")) {
+			if (result.length()!=0) {
+				result.append("%");
+			}else {
+				result.append(add).append("%");
+			}
+		}
+		return result.toString();
+	}
 	public List<Organization> getAllOrganizations(SecurityContextBase securityContext,
 										   OrganizationFiltering filtering) {
 		CriteriaBuilder cb = em.getCriteriaBuilder();

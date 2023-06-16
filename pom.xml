@@ -3,7 +3,7 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>com.wizzdi</groupId>
     <artifactId>organization-service</artifactId>
-    <version>3.0.4</version>
+    <version>3.0.5-SNAPSHOT</version>
     <name>organization-service</name>
     <description>FlexiCore service plugin , managing organizations</description>
     <url>https://wizzdi.com</url>
@@ -17,8 +17,8 @@
     </licenses>
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <maven.compiler.source>11</maven.compiler.source>
-        <maven.compiler.target>11</maven.compiler.target>
+        <maven.compiler.source>17</maven.compiler.source>
+        <maven.compiler.target>17</maven.compiler.target>
         <version.compiler.plugin>3.3</version.compiler.plugin>
         <version.eclipselink>2.7.7</version.eclipselink>
 
@@ -26,8 +26,8 @@
         <version.surefire.plugin>2.16</version.surefire.plugin>
         <pf4j-spring.version>0.7.0</pf4j-spring.version>
         <swagger.version>2.0.8</swagger.version>
-        <flexicore-boot-dependencies.version>2.1.1</flexicore-boot-dependencies.version>
-        <spring-boot-dependencies.version>2.5.2</spring-boot-dependencies.version>
+        <flexicore-boot-dependencies.version>3.0.4</flexicore-boot-dependencies.version>
+        <spring-boot-dependencies.version>2.7.4</spring-boot-dependencies.version>
     </properties>
     <distributionManagement>
         <snapshotRepository>
@@ -94,7 +94,7 @@
         <dependency>
             <groupId>com.wizzdi</groupId>
             <artifactId>organization-model</artifactId>
-            <version>3.0.2</version>
+            <version>3.0.3-SNAPSHOT</version>
             <scope>provided</scope>
         </dependency>
         <dependency>

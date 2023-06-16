@@ -9,6 +9,8 @@ public class OrganizationFiltering extends PaginationFilter {
 
 	private BasicPropertiesFilter basicPropertiesFilter;
 	private Set<String> externalIds;
+	private String organizationNameLike;
+	private String employeeNameLike;
 	public BasicPropertiesFilter getBasicPropertiesFilter() {
 		return basicPropertiesFilter;
 	}
@@ -24,6 +26,26 @@ public class OrganizationFiltering extends PaginationFilter {
 
 	public OrganizationFiltering setExternalIds(Set<String> externalIds) {
 		this.externalIds = externalIds;
+		return this;
+	}
+
+
+
+	public String getOrganizationNameLike() {
+		return organizationNameLike;
+	}
+
+	public OrganizationFiltering setOrganizationNameLike(String organizationNameLike) {
+		this.organizationNameLike = organizationNameLike;
+		return this;
+	}
+
+	public String getEmployeeNameLike() {
+		return employeeNameLike;
+	}
+
+	public OrganizationFiltering setEmployeeNameLike(String employeeNameLike) {
+		this.employeeNameLike = employeeNameLike;
 		return this;
 	}
 }

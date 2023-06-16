@@ -152,7 +152,7 @@ public class EmployeeService implements Plugin {
 						.collect(Collectors.toMap(f -> f.getId(), f -> f));
 		ids.removeAll(organizationMap.keySet());
 		if (!ids.isEmpty()) {
-			throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "No Car with ids " + ids);
+			throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "error,No Organizations with ids " + ids);
 		}
 		filtering.setOrganizations(new ArrayList<>(organizationMap.values()));
 
